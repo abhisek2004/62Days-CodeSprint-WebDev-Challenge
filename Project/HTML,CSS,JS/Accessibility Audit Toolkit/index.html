@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accessibility Audit Toolkit (A11y Checker)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">♿</span>
+      <div>
+        <h1>Accessibility Audit Toolkit</h1>
+        <p class="tagline">Real-time A11y checker for headings, alt text, contrast &amp; keyboard focus</p>
+      </div>
+    </div>
+    <button type="button" id="themeToggle" class="btn-icon" aria-label="Switch to dark mode" title="Toggle theme">🌙</button>
+  </header>
+
+  <main class="app-main">
+    <section class="panel input-panel" aria-labelledby="input-heading">
+      <div class="panel-header">
+        <h2 id="input-heading">HTML Input</h2>
+        <div class="panel-actions">
+          <label class="sr-only" for="sampleSelect">Load sample page</label>
+          <select id="sampleSelect" class="select">
+            <option value="">Load sample…</option>
+            <option value="good">✅ Accessible page</option>
+            <option value="bad">❌ Problematic page</option>
+            <option value="form">📝 Form page</option>
+          </select>
+          <button type="button" id="clearBtn" class="btn btn-ghost">Clear</button>
+        </div>
+      </div>
+      <textarea
+        id="htmlInput"
+        class="html-input"
+        spellcheck="false"
+        placeholder="Paste HTML here — audit runs automatically as you type…"
+        aria-describedby="input-hint"
+      ></textarea>
+      <p id="input-hint" class="hint">Changes are audited in real time (300ms debounce).</p>
+    </section>
+
+    <section class="panel preview-panel" aria-labelledby="preview-heading">
+      <div class="panel-header">
+        <h2 id="preview-heading">Live Preview</h2>
+        <button type="button" id="focusTestBtn" class="btn btn-primary">
+          Test keyboard focus
+        </button>
+      </div>
+      <div class="preview-wrapper">
+        <iframe
+          id="previewFrame"
+          title="Accessibility preview sandbox"
+          sandbox="allow-same-origin"
+        ></iframe>
+        <div id="focusOverlay" class="focus-overlay hidden" aria-hidden="true"></div>
+      </div>
+      <p class="hint">Use <kbd>Tab</kbd> inside preview during focus test.</p>
+    </section>
+
+    <aside class="panel report-panel" aria-labelledby="report-heading" aria-live="polite">
+      <div class="panel-header">
+        <h2 id="report-heading">Audit Report</h2>
+        <span id="auditStatus" class="status-badge status-idle">Waiting for input</span>
+      </div>
+
+      <div id="scoreCard" class="score-card hidden">
+        <div class="score-ring" id="scoreRing" data-score="0">
+          <span id="scoreValue">0</span>
+        </div>
+        <div class="score-summary">
+          <p class="score-label">Accessibility Score</p>
+          <div class="issue-counts">
+            <span class="count count-error" id="errorCount">0 errors</span>
+            <span class="count count-warn" id="warnCount">0 warnings</span>
+            <span class="count count-pass" id="passCount">0 passed</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportSections" class="report-sections">
+        <p class="empty-state">Paste HTML or load a sample to see real-time results.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="app-footer">
+    <p>Educational tool — checks common WCAG patterns. Not a replacement for professional audit tools.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,8 +1,0 @@
-<svg width="220" height="60" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
-  <rect width="220" height="60" rx="12" fill="#0f172a"></rect>
-  <circle cx="40" cy="30" r="12" fill="#3b82f6"></circle>
-  <circle cx="60" cy="30" r="12" fill="#6366f1"></circle>
-  <text x="90" y="38" font-family="Arial" font-size="22" fill="white" font-weight="bold">
-    Trimly
-  </text>
-</svg>
