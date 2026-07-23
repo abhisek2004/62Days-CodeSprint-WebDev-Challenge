@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Network Waterfall Simulator · Learning Performance</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div>
+                <h1>🌊 Network Waterfall Simulator</h1>
+                <p class="subtitle">Learn web performance · Request priority · Caching · HTTP/2 multiplexing</p>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Controls -->
+        <section class="controls-section">
+            <div class="control-group">
+                <button class="btn-simulate" id="simulateBtn">▶️ Simulate Requests</button>
+                <button class="btn-clear" id="clearBtn">🗑️ Clear</button>
+                <button class="btn-preset" id="presetBtn">📋 Load Preset</button>
+            </div>
+            <div class="control-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="http2Check" checked />
+                    HTTP/2 Multiplexing
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="cacheCheck" checked />
+                    Enable Caching
+                </label>
+            </div>
+        </section>
+
+        <!-- Waterfall Visualization -->
+        <section class="waterfall-section">
+            <div class="waterfall-header">
+                <h2>📊 Request Waterfall</h2>
+                <div class="waterfall-stats">
+                    <span id="totalRequests">0</span> requests ·
+                    <span id="totalTime">0</span>ms total ·
+                    <span id="blockedTime">0</span>ms blocked
+                </div>
+            </div>
+            <div class="waterfall-container" id="waterfallContainer">
+                <div class="waterfall-timeline">
+                    <div class="timeline-ruler" id="timelineRuler"></div>
+                    <div class="waterfall-rows" id="waterfallRows">
+                        <div class="empty-state">Click "Simulate Requests" to generate a network waterfall</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HTTP/2 Multiplexing Visualization -->
+        <section class="multiplex-section" id="multiplexSection">
+            <div class="multiplex-header">
+                <h2>🔀 HTTP/2 Multiplexing Visualization</h2>
+                <span class="multiplex-status" id="multiplexStatus">⚡ Enabled</span>
+            </div>
+            <div class="multiplex-container" id="multiplexContainer">
+                <div class="multiplex-streams" id="multiplexStreams">
+                    <div class="empty-state">Run a simulation to see HTTP/2 multiplexing in action</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Caching Demo -->
+        <section class="cache-section">
+            <div class="cache-header">
+                <h2>💾 Caching Behavior Demo</h2>
+                <button class="btn-cache-test" id="cacheTestBtn">🔄 Test Cache</button>
+            </div>
+            <div class="cache-container" id="cacheContainer">
+                <div class="cache-status" id="cacheStatus">
+                    <span class="cache-stat">Cache Hits: <strong id="cacheHits">0</strong></span>
+                    <span class="cache-stat">Cache Misses: <strong id="cacheMisses">0</strong></span>
+                    <span class="cache-stat">Cache Ratio: <strong id="cacheRatio">0%</strong></span>
+                </div>
+                <div class="cache-items" id="cacheItems">
+                    <div class="empty-state">No cached items yet. Run a simulation or test cache.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lighthouse Tips Panel -->
+        <section class="tips-section">
+            <div class="tips-header">
+                <h2>💡 Lighthouse-like Performance Tips</h2>
+                <span class="tips-score" id="tipsScore">Score: —</span>
+            </div>
+            <div class="tips-container" id="tipsContainer">
+                <div class="empty-state">Run a simulation to get performance insights</div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <span>Network Waterfall Simulator · Learn web performance interactively · Fully client-side</span>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
