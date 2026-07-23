@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client-Side Vector Drawing Board · SVG Export</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div>
+                <h1>✏️ Vector Drawing Board</h1>
+                <p class="subtitle">SVG · Layers · Undo · Snap-to-grid · Export</p>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <section class="toolbar">
+            <div class="tool-group">
+                <button class="tool-btn active" data-tool="pen" title="Pen (P)">✏️</button>
+                <button class="tool-btn" data-tool="line" title="Line (L)">╱</button>
+                <button class="tool-btn" data-tool="rect" title="Rectangle (R)">▭</button>
+                <button class="tool-btn" data-tool="circle" title="Circle (C)">○</button>
+                <button class="tool-btn" data-tool="text" title="Text (T)">T</button>
+                <button class="tool-btn" data-tool="select" title="Select (V)">⬚</button>
+            </div>
+            <div class="tool-group">
+                <button class="tool-btn" id="undoBtn" title="Undo (Ctrl+Z)">↩️</button>
+                <button class="tool-btn" id="redoBtn" title="Redo (Ctrl+Y)">↪️</button>
+                <button class="tool-btn" id="clearBtn" title="Clear All">🗑️</button>
+            </div>
+            <div class="tool-group">
+                <label class="color-label">
+                    Color
+                    <input type="color" id="strokeColor" value="#3b82f6" />
+                </label>
+                <label class="color-label">
+                    Fill
+                    <input type="color" id="fillColor" value="#3b82f640" />
+                </label>
+                <label class="size-label">
+                    Size
+                    <input type="range" id="strokeWidth" min="1" max="20" value="3" />
+                    <span id="strokeWidthValue">3</span>
+                </label>
+            </div>
+            <div class="tool-group">
+                <button class="tool-btn" id="gridToggle" title="Snap-to-grid (G)">📐</button>
+                <button class="tool-btn" id="exportSvgBtn" title="Export SVG">📄 SVG</button>
+                <button class="tool-btn" id="exportPngBtn" title="Export PNG">🖼️ PNG</button>
+            </div>
+        </section>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Drawing Canvas -->
+            <section class="canvas-panel">
+                <div class="canvas-container" id="canvasContainer">
+                    <svg id="drawingSvg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                        <rect id="backgroundRect" width="100%" height="100%" fill="#ffffff" />
+                        <g id="shapesGroup"></g>
+                        <g id="tempGroup"></g>
+                    </svg>
+                    <div class="canvas-status" id="canvasStatus">
+                        <span id="cursorPos">0, 0</span>
+                        <span id="shapeCount">Shapes: 0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Layers Panel -->
+            <section class="layers-panel">
+                <div class="panel-header">
+                    <h2>📚 Layers</h2>
+                    <div class="layer-actions">
+                        <button class="btn-add-layer" id="addLayerBtn">➕</button>
+                        <button class="btn-delete-layer" id="deleteLayerBtn">🗑️</button>
+                    </div>
+                </div>
+                <div class="layers-list" id="layersList">
+                    <!-- Layers rendered by JS -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <span>Vector Drawing Board · Fully client-side · Keyboard shortcuts: P, L, R, C, T, V, G, Ctrl+Z, Ctrl+Y</span>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
