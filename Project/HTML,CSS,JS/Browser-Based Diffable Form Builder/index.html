@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browser-Based Diffable Form Builder</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div>
+                <h1>📝 Form Builder</h1>
+                <p class="subtitle">Drag & drop · Validation · Conditional logic · Export</p>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left Panel: Field Builder -->
+            <section class="builder-panel">
+                <div class="panel-header">
+                    <h2>🧩 Form Builder</h2>
+                    <div class="builder-actions">
+                        <button class="btn-add-field" id="addFieldBtn">➕ Add Field</button>
+                        <button class="btn-clear-form" id="clearFormBtn">🗑️ Clear</button>
+                    </div>
+                </div>
+                <div class="field-types" id="fieldTypes">
+                    <button class="field-type-btn" data-type="text">📝 Text</button>
+                    <button class="field-type-btn" data-type="email">✉️ Email</button>
+                    <button class="field-type-btn" data-type="number">🔢 Number</button>
+                    <button class="field-type-btn" data-type="textarea">📄 Textarea</button>
+                    <button class="field-type-btn" data-type="select">📋 Select</button>
+                    <button class="field-type-btn" data-type="checkbox">☑️ Checkbox</button>
+                    <button class="field-type-btn" data-type="radio">🔘 Radio</button>
+                    <button class="field-type-btn" data-type="date">📅 Date</button>
+                </div>
+                <div class="fields-container" id="fieldsContainer">
+                    <div class="empty-state">Drop fields here or click "Add Field"</div>
+                </div>
+            </section>
+
+            <!-- Center Panel: Field Editor -->
+            <section class="editor-panel" id="editorPanel">
+                <div class="panel-header">
+                    <h2>⚙️ Field Editor</h2>
+                    <span class="editor-field-id" id="editorFieldId">No field selected</span>
+                </div>
+                <div class="editor-content" id="editorContent">
+                    <div class="empty-state">Select a field to edit its properties</div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Preview & Export -->
+            <section class="preview-panel">
+                <div class="panel-header">
+                    <h2>👁️ Live Preview</h2>
+                    <div class="preview-actions">
+                        <button class="btn-export-html" id="exportHtmlBtn">📄 Export HTML</button>
+                        <button class="btn-export-json" id="exportJsonBtn">📋 Export JSON</button>
+                    </div>
+                </div>
+                <div class="preview-container" id="previewContainer">
+                    <div class="empty-state">Build your form to see the live preview</div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <span>Form Builder · Pure frontend · Drag & drop · Validation · Conditional logic</span>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
