@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accessibility Contrast Lab + Live Theme Generator</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div>
+                <h1>🎨 Accessibility Contrast Lab</h1>
+                <p class="subtitle">WCAG AA/AAA contrast checker · Live theme generator · CSS variables export</p>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left Panel: Color Controls -->
+            <section class="controls-panel">
+                <div class="panel-header">
+                    <h2>🎨 Theme Colors</h2>
+                    <button class="btn-reset" id="resetColorsBtn">🔄 Reset</button>
+                </div>
+                <div class="panel-body">
+                    <!-- Color Pickers -->
+                    <div class="color-group">
+                        <label>Background</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="bgColor" value="#1a1a2e" />
+                            <input type="text" id="bgColorHex" value="#1a1a2e" />
+                        </div>
+                    </div>
+
+                    <div class="color-group">
+                        <label>Primary Text</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="textPrimaryColor" value="#e2e8f0" />
+                            <input type="text" id="textPrimaryColorHex" value="#e2e8f0" />
+                        </div>
+                    </div>
+
+                    <div class="color-group">
+                        <label>Secondary Text</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="textSecondaryColor" value="#94a3b8" />
+                            <input type="text" id="textSecondaryColorHex" value="#94a3b8" />
+                        </div>
+                    </div>
+
+                    <div class="color-group">
+                        <label>Accent Color</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="accentColor" value="#3b82f6" />
+                            <input type="text" id="accentColorHex" value="#3b82f6" />
+                        </div>
+                    </div>
+
+                    <div class="color-group">
+                        <label>Success</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="successColor" value="#22c55e" />
+                            <input type="text" id="successColorHex" value="#22c55e" />
+                        </div>
+                    </div>
+
+                    <div class="color-group">
+                        <label>Error</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="errorColor" value="#ef4444" />
+                            <input type="text" id="errorColorHex" value="#ef4444" />
+                        </div>
+                    </div>
+
+                    <div class="color-group">
+                        <label>Warning</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="warningColor" value="#f59e0b" />
+                            <input type="text" id="warningColorHex" value="#f59e0b" />
+                        </div>
+                    </div>
+
+                    <div class="color-group">
+                        <label>Border Color</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="borderColor" value="#334155" />
+                            <input type="text" id="borderColorHex" value="#334155" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Panel: Contrast Results -->
+            <section class="contrast-panel">
+                <div class="panel-header">
+                    <h2>📊 Contrast Analysis</h2>
+                    <span class="contrast-summary" id="contrastSummary">WCAG AA: ✓ AA: ✓</span>
+                </div>
+                <div class="panel-body">
+                    <div class="contrast-item" id="contrastPrimary">
+                        <div class="contrast-colors">
+                            <span class="color-swatch" id="swatchPrimaryBg" style="background:#1a1a2e;"></span>
+                            <span class="color-swatch" id="swatchPrimaryText" style="background:#e2e8f0;"></span>
+                        </div>
+                        <div class="contrast-info">
+                            <span class="contrast-label">Primary Text vs Background</span>
+                            <span class="contrast-ratio" id="ratioPrimary">0.00 : 1</span>
+                        </div>
+                        <div class="contrast-badges">
+                            <span class="badge" id="badgePrimaryAA">AA: —</span>
+                            <span class="badge" id="badgePrimaryAAA">AAA: —</span>
+                        </div>
+                        <div class="contrast-fix" id="fixPrimary"></div>
+                    </div>
+
+                    <div class="contrast-item" id="contrastSecondary">
+                        <div class="contrast-colors">
+                            <span class="color-swatch" id="swatchSecondaryBg" style="background:#1a1a2e;"></span>
+                            <span class="color-swatch" id="swatchSecondaryText" style="background:#94a3b8;"></span>
+                        </div>
+                        <div class="contrast-info">
+                            <span class="contrast-label">Secondary Text vs Background</span>
+                            <span class="contrast-ratio" id="ratioSecondary">0.00 : 1</span>
+                        </div>
+                        <div class="contrast-badges">
+                            <span class="badge" id="badgeSecondaryAA">AA: —</span>
+                            <span class="badge" id="badgeSecondaryAAA">AAA: —</span>
+                        </div>
+                        <div class="contrast-fix" id="fixSecondary"></div>
+                    </div>
+
+                    <div class="contrast-item" id="contrastAccent">
+                        <div class="contrast-colors">
+                            <span class="color-swatch" id="swatchAccentBg" style="background:#1a1a2e;"></span>
+                            <span class="color-swatch" id="swatchAccentText" style="background:#3b82f6;"></span>
+                        </div>
+                        <div class="contrast-info">
+                            <span class="contrast-label">Accent vs Background</span>
+                            <span class="contrast-ratio" id="ratioAccent">0.00 : 1</span>
+                        </div>
+                        <div class="contrast-badges">
+                            <span class="badge" id="badgeAccentAA">AA: —</span>
+                            <span class="badge" id="badgeAccentAAA">AAA: —</span>
+                        </div>
+                        <div class="contrast-fix" id="fixAccent"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Export & Preview -->
+            <section class="export-panel">
+                <div class="panel-header">
+                    <h2>📦 Export & Preview</h2>
+                    <button class="btn-copy-css" id="copyCssBtn">📋 Copy CSS</button>
+                </div>
+                <div class="panel-body">
+                    <!-- CSS Variables -->
+                    <div class="export-section">
+                        <label>CSS Variables</label>
+                        <pre id="cssVariablesOutput"><code>:root {\n  --bg-color: #1a1a2e;\n  --text-primary: #e2e8f0;\n  --text-secondary: #94a3b8;\n  --accent: #3b82f6;\n  --success: #22c55e;\n  --error: #ef4444;\n  --warning: #f59e0b;\n  --border: #334155;\n}</code></pre>
+                    </div>
+
+                    <!-- Component Preview -->
+                    <div class="preview-section">
+                        <label>Component Preview</label>
+                        <div class="preview-container" id="previewContainer">
+                            <div class="preview-card">
+                                <h3>Sample Card</h3>
+                                <p>This is a preview of your theme colors applied to UI components.</p>
+                                <div class="preview-actions">
+                                    <button class="preview-btn primary">Primary</button>
+                                    <button class="preview-btn secondary">Secondary</button>
+                                    <button class="preview-btn success">Success</button>
+                                    <button class="preview-btn error">Error</button>
+                                    <button class="preview-btn warning">Warning</button>
+                                </div>
+                                <div class="preview-inputs">
+                                    <input type="text" placeholder="Input field" />
+                                    <textarea placeholder="Textarea"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <span>Accessibility Contrast Lab · WCAG AA/AAA · Live theme generator · CSS variables export</span>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
