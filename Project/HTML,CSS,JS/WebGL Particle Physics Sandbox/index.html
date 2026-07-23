@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGL Particle Physics Sandbox</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Canvas -->
+        <canvas id="particleCanvas"></canvas>
+
+        <!-- HUD Overlay -->
+        <div class="hud" id="hud">
+            <div class="hud-item">
+                <span class="hud-label">FPS</span>
+                <span class="hud-value" id="fpsDisplay">60</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Particles</span>
+                <span class="hud-value" id="particleCount">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Wells</span>
+                <span class="hud-value" id="wellCount">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">⚡</span>
+                <span class="hud-value" id="energyDisplay">0</span>
+            </div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="controls-panel" id="controlsPanel">
+            <div class="panel-header">
+                <h2>⚙️ Controls</h2>
+                <button class="btn-toggle-panel" id="togglePanelBtn">−</button>
+            </div>
+            <div class="panel-body" id="panelBody">
+                <!-- Presets -->
+                <div class="control-group">
+                    <label>Presets</label>
+                    <div class="preset-buttons">
+                        <button class="btn-preset" data-preset="galaxy">🌌 Galaxy</button>
+                        <button class="btn-preset" data-preset="solar">🪐 Solar</button>
+                        <button class="btn-preset" data-preset="explosion">💥 Explosion</button>
+                        <button class="btn-preset" data-preset="swirl">🌀 Swirl</button>
+                        <button class="btn-preset" data-preset="bubble">🫧 Bubble</button>
+                    </div>
+                </div>
+
+                <!-- Particle Controls -->
+                <div class="control-group">
+                    <label>Particles</label>
+                    <div class="control-row">
+                        <button class="btn-action" id="addParticlesBtn">➕ Add 50</button>
+                        <button class="btn-action" id="clearParticlesBtn">🗑️ Clear</button>
+                    </div>
+                    <div class="control-row">
+                        <label class="slider-label">
+                            Count
+                            <input type="range" id="particleCountSlider" min="0" max="500" value="200" />
+                            <span id="particleCountValue">200</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Gravity Wells -->
+                <div class="control-group">
+                    <label>Gravity Wells</label>
+                    <div class="control-row">
+                        <button class="btn-action" id="addWellBtn">➕ Add Well</button>
+                        <button class="btn-action" id="clearWellsBtn">🗑️ Clear</button>
+                    </div>
+                    <div class="control-row">
+                        <label class="slider-label">
+                            Strength
+                            <input type="range" id="wellStrengthSlider" min="0" max="200" value="80" />
+                            <span id="wellStrengthValue">80</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Simulation Controls -->
+                <div class="control-group">
+                    <label>Simulation</label>
+                    <div class="control-row">
+                        <button class="btn-action" id="toggleSimBtn">⏸️ Pause</button>
+                        <button class="btn-action" id="resetBtn">🔄 Reset</button>
+                    </div>
+                    <div class="control-row">
+                        <label class="slider-label">
+                            Speed
+                            <input type="range" id="speedSlider" min="0" max="200" value="100" />
+                            <span id="speedValue">1.0x</span>
+                        </label>
+                    </div>
+                    <div class="control-row">
+                        <label class="slider-label">
+                            Gravity
+                            <input type="range" id="gravitySlider" min="0" max="200" value="100" />
+                            <span id="gravityValue">1.0x</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Share -->
+                <div class="control-group">
+                    <label>Share</label>
+                    <div class="control-row">
+                        <button class="btn-action" id="shareBtn">🔗 Copy Share Link</button>
+                        <button class="btn-action" id="loadUrlBtn">📥 Load from URL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions" id="instructions">
+            <span>🖱️ Click to spawn particles · Drag to create wells · Scroll to zoom</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
