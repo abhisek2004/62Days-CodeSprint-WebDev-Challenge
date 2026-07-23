@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Currency Converter</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Animated Background Orbs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="app-container">
+    <div class="converter-card">
+      <div class="card-header">
+        <h1>Global Currency</h1>
+        <p>Live, real-time exchange rates</p>
+      </div>
+      
+      <div class="input-group">
+        <label for="amount">Amount</label>
+        <div class="input-wrapper">
+          <span class="currency-symbol" id="currency-symbol">$</span>
+          <input type="number" id="amount" value="1000" min="0" step="any" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="currency-row">
+        <div class="currency-group">
+          <label>From</label>
+          <div class="custom-select" id="from-currency">
+            <div class="select-selected">
+              <span class="flag">🇺🇸</span>
+              <span class="code">USD</span>
+              <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+            <div class="select-items hide">
+              <input type="text" class="search-currency" placeholder="Search currency..." autocomplete="off">
+              <div class="currency-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="swap-btn" id="swap-btn" title="Swap Currencies">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
+        </button>
+
+        <div class="currency-group">
+          <label>To</label>
+          <div class="custom-select" id="to-currency">
+            <div class="select-selected">
+              <span class="flag">🇪🇺</span>
+              <span class="code">EUR</span>
+              <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+            <div class="select-items hide">
+              <input type="text" class="search-currency" placeholder="Search currency..." autocomplete="off">
+              <div class="currency-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-container">
+        <div class="result-amount" id="result-amount">Getting live rates...</div>
+        <div class="result-rate" id="result-rate">---</div>
+        <div class="result-date" id="result-date">---</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
