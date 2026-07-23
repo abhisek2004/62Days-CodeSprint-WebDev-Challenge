@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local-First Kanban · IndexedDB Sync Conflict Demo</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div>
+                <h1>📋 Local-First Kanban</h1>
+                <p class="subtitle">IndexedDB Sync Conflict Demo · Offline-first teaching tool</p>
+            </div>
+            <div class="header-controls">
+                <button class="btn-sync" id="syncBtn">🔄 Simulate Sync</button>
+                <button class="btn-conflict" id="conflictBtn">⚡ Trigger Conflict</button>
+                <button class="theme-toggle" id="themeToggle">
+                    <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Status Bar -->
+        <section class="status-bar" id="statusBar">
+            <span class="status-text" id="statusText">✅ Ready · Data stored in IndexedDB</span>
+            <span class="status-detail" id="statusDetail">Last sync: Never</span>
+        </section>
+
+        <!-- Board Controls -->
+        <section class="board-controls">
+            <input type="text" id="boardNameInput" placeholder="New board name..." />
+            <button class="btn-add-board" id="addBoardBtn">➕ Add Board</button>
+            <button class="btn-clear-all" id="clearAllBtn">🗑️ Clear All Data</button>
+        </section>
+
+        <!-- Boards Container -->
+        <section class="boards-container" id="boardsContainer">
+            <div class="empty-state">No boards yet. Create your first board above!</div>
+        </section>
+
+        <!-- Conflict Resolution Modal -->
+        <div class="modal-overlay" id="conflictModal" style="display: none;">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2>⚡ Conflict Detected</h2>
+                    <button class="modal-close" id="closeConflictModal">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p class="conflict-desc">Two versions of this card exist. Choose which version to keep or merge them.</p>
+                    
+                    <div class="conflict-versions">
+                        <div class="conflict-version local">
+                            <h3>📌 Local Version</h3>
+                            <div class="conflict-card" id="localCard">
+                                <div class="card-title">Card Title</div>
+                                <div class="card-desc">Description here</div>
+                                <div class="card-status">Status: todo</div>
+                            </div>
+                            <button class="btn-choose-local" id="chooseLocalBtn">✅ Keep Local</button>
+                        </div>
+                        <div class="conflict-version remote">
+                            <h3>☁️ Remote Version</h3>
+                            <div class="conflict-card" id="remoteCard">
+                                <div class="card-title">Card Title</div>
+                                <div class="card-desc">Description here</div>
+                                <div class="card-status">Status: todo</div>
+                            </div>
+                            <button class="btn-choose-remote" id="chooseRemoteBtn">✅ Keep Remote</button>
+                        </div>
+                    </div>
+                    
+                    <div class="conflict-merge">
+                        <h3>🔄 Merge Both</h3>
+                        <p class="merge-desc">Create a merged version with the best of both:</p>
+                        <div class="merge-fields">
+                            <label>
+                                Title:
+                                <input type="text" id="mergeTitle" />
+                            </label>
+                            <label>
+                                Description:
+                                <textarea id="mergeDesc" rows="3"></textarea>
+                            </label>
+                            <label>
+                                Status:
+                                <select id="mergeStatus">
+                                    <option value="todo">To Do</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="done">Done</option>
+                                </select>
+                            </label>
+                        </div>
+                        <button class="btn-merge" id="mergeBtn">🔀 Merge & Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Card Modal -->
+        <div class="modal-overlay" id="addCardModal" style="display: none;">
+            <div class="modal modal-small">
+                <div class="modal-header">
+                    <h2>➕ Add Card</h2>
+                    <button class="modal-close" id="closeAddCardModal">✕</button>
+                </div>
+                <div class="modal-body">
+                    <label>
+                        Card Title:
+                        <input type="text" id="cardTitleInput" placeholder="Enter card title..." />
+                    </label>
+                    <label>
+                        Description:
+                        <textarea id="cardDescInput" rows="3" placeholder="Enter description..."></textarea>
+                    </label>
+                    <label>
+                        Status:
+                        <select id="cardStatusInput">
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </label>
+                    <button class="btn-add-card" id="addCardBtn">➕ Add Card</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <span>Local-First Kanban · IndexedDB Sync Conflict Demo · No backend required</span>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
