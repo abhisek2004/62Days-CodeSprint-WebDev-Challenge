@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moodify — Premium Music Player</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="logo">
+          <svg viewBox="0 0 48 48" width="36" height="36">
+            <circle cx="24" cy="24" r="24" fill="#1DB954" />
+            <path
+              d="M34.4 21.8c-5.6-3.3-14.8-3.6-20.1-2-.8.3-1.7-.2-2-1-.3-.8.2-1.7 1-2 6.1-1.9 16.2-1.5 22.6 2.3.7.4 1 1.4.5 2.2-.4.7-1.3.9-2 .5zm-1.8 5c-4.7-2.9-11.8-3.7-17.3-2-.6.2-1.3-.2-1.5-.8-.2-.6.2-1.3.8-1.5 6.3-1.9 14.2-1 19.6 2.3.6.3.7 1.1.4 1.6-.4.6-1.1.8-1.7.4zm-2 4.8c-3.7-2.2-9.4-2.7-13.9-1.5-.5.2-1.1-.1-1.3-.6-.1-.5.1-1.1.6-1.3 5-1.4 11.3-.8 15.6 1.8.5.3.6.9.4 1.3-.3.5-.9.6-1.4.3z"
+              fill="#191414"
+            />
+          </svg>
+          <span>Moodify</span>
+        </div>
+        <nav class="nav">
+          <a class="nav-item active" data-view="home">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path
+                d="M12.5 3.25a1 1 0 0 0-1 0L4 7.58V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.58l-7.5-4.33z"
+              />
+            </svg>
+            <span>Home</span>
+          </a>
+          <a class="nav-item" data-view="search">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path
+                d="M10.5 1.3a9.28 9.28 0 1 0 5.9 16.5l4.35 4.35a1 1 0 0 0 1.42-1.42L17.8 16.4A9.28 9.28 0 0 0 10.5 1.3zm0 2a7.28 7.28 0 1 1 0 14.56 7.28 7.28 0 0 1 0-14.56z"
+              />
+            </svg>
+            <span>Search</span>
+          </a>
+          <a class="nav-item" data-view="library">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path
+                d="M3 22a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1zm6 0a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1zm5.5-19.87A1 1 0 0 1 16 3v18a1 1 0 0 1-1.5.87l-2-1.16V3.3l2-1.16z"
+              />
+            </svg>
+            <span>Library</span>
+          </a>
+        </nav>
+        <div class="divider"></div>
+        <div class="pl-header">
+          <span>PLAYLIST</span><span class="pl-count" id="trackCount"></span>
+        </div>
+        <ul class="playlist" id="playlist"></ul>
+      </aside>
+
+      <main class="main" id="mainArea">
+        <!-- HOME -->
+        <div class="view active" id="viewHome">
+          <div class="now-playing">
+            <div class="art-wrap">
+              <div class="album-art" id="albumArt">
+                <canvas id="visualizer" width="300" height="300"></canvas>
+                <div class="vinyl" id="vinyl">
+                  <div class="vinyl-hole"></div>
+                  <div class="vinyl-ring r1"></div>
+                  <div class="vinyl-ring r2"></div>
+                  <div class="vinyl-ring r3"></div>
+                </div>
+              </div>
+              <div class="art-glow" id="artGlow"></div>
+            </div>
+            <h1 class="trk-title" id="trkTitle">Moodify</h1>
+            <p class="trk-artist" id="trkArtist">Select a track to begin</p>
+            <div class="trk-tags" id="trkTags"></div>
+            <div class="up-next" id="upNext">
+              <h3>Up Next</h3>
+              <div class="up-next-list" id="upNextList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="view" id="viewSearch">
+          <div class="search-view">
+            <h2 class="view-heading">Search</h2>
+            <div class="search-bar">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="#a7a7a7">
+                <path
+                  d="M10.5 1.3a9.28 9.28 0 1 0 5.9 16.5l4.35 4.35a1 1 0 0 0 1.42-1.42L17.8 16.4A9.28 9.28 0 0 0 10.5 1.3zm0 2a7.28 7.28 0 1 1 0 14.56 7.28 7.28 0 0 1 0-14.56z"
+                />
+              </svg>
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search tracks, artists, or genres..."
+              />
+              <button class="search-clear" id="searchClear">&times;</button>
+            </div>
+            <div class="genre-pills" id="genrePills"></div>
+            <div class="search-grid" id="searchGrid"></div>
+          </div>
+        </div>
+
+        <!-- LIBRARY -->
+        <div class="view" id="viewLibrary">
+          <div class="library-view">
+            <div class="lib-section">
+              <h2 class="view-heading">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#1DB954">
+                  <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.04 6.04 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  />
+                </svg>
+                Liked Songs
+              </h2>
+              <p class="lib-empty" id="likedEmpty">
+                No liked songs yet. Hit ♥ on tracks you love.
+              </p>
+              <div class="lib-list" id="likedList"></div>
+            </div>
+            <div class="lib-section">
+              <h2 class="view-heading">🕐 Recently Played</h2>
+              <p class="lib-empty" id="recentEmpty">
+                Play some tracks to see history here.
+              </p>
+              <div class="lib-list" id="recentList"></div>
+            </div>
+            <div class="lib-section">
+              <h2 class="view-heading">📂 All Tracks</h2>
+              <div class="lib-list" id="allList"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- EQ PANEL -->
+    <div class="eq-panel" id="eqPanel">
+      <div class="eq-header">
+        <h4>Equalizer</h4>
+        <button class="eq-close" id="eqClose">&times;</button>
+      </div>
+      <div class="eq-row">
+        <label>Bass</label
+        ><input
+          type="range"
+          id="eqBass"
+          min="-12"
+          max="12"
+          value="0"
+          step="1"
+        /><span id="eqBassV">0</span>
+      </div>
+      <div class="eq-row">
+        <label>Mid</label
+        ><input
+          type="range"
+          id="eqMid"
+          min="-12"
+          max="12"
+          value="0"
+          step="1"
+        /><span id="eqMidV">0</span>
+      </div>
+      <div class="eq-row">
+        <label>Treble</label
+        ><input
+          type="range"
+          id="eqTreble"
+          min="-12"
+          max="12"
+          value="0"
+          step="1"
+        /><span id="eqTrebV">0</span>
+      </div>
+      <div class="eq-presets">
+        <button class="eq-pre" data-p="flat">Flat</button>
+        <button class="eq-pre" data-p="bass">Bass+</button>
+        <button class="eq-pre" data-p="treble">Treble+</button>
+        <button class="eq-pre" data-p="vocal">Vocal</button>
+      </div>
+    </div>
+
+    <!-- PLAYER BAR -->
+    <footer class="player-bar">
+      <div class="pb-left">
+        <div class="pb-thumb" id="pbThumb"></div>
+        <div class="pb-info">
+          <p class="pb-title" id="pbTitle">No track selected</p>
+          <p class="pb-artist" id="pbArtist">---</p>
+        </div>
+        <button class="like-btn" id="likeBtn" title="Like">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.04 6.04 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
+          </svg>
+        </button>
+      </div>
+      <div class="pb-center">
+        <div class="controls">
+          <button class="cb" id="shuffleBtn" title="Shuffle">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path
+                d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"
+              />
+            </svg>
+          </button>
+          <button class="cb" id="prevBtn" title="Previous">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+              <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
+            </svg>
+          </button>
+          <button class="cb play-btn" id="playBtn" title="Play">
+            <svg
+              class="ico-play"
+              viewBox="0 0 24 24"
+              width="28"
+              height="28"
+              fill="currentColor"
+            >
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <svg
+              class="ico-pause"
+              viewBox="0 0 24 24"
+              width="28"
+              height="28"
+              fill="currentColor"
+              style="display: none"
+            >
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          </button>
+          <button class="cb" id="nextBtn" title="Next">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+              <path d="M6 18l8.5-6L6 6v12zm10-12v12h2V6h-2z" />
+            </svg>
+          </button>
+          <button class="cb" id="repeatBtn" title="Repeat">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path
+                d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="prog-row">
+          <span class="time" id="curTime">0:00</span>
+          <div class="slider-wrap" id="progWrap">
+            <div class="slider-track">
+              <div class="slider-fill" id="progFill"></div>
+              <div class="slider-dot" id="progDot"></div>
+            </div>
+          </div>
+          <span class="time" id="totTime">0:00</span>
+        </div>
+      </div>
+      <div class="pb-right">
+        <button class="cb" id="eqBtn" title="Equalizer">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M10 20h4V4h-4v16zm-6 0h4v-8H4v8zM16 9v11h4V9h-4z" />
+          </svg>
+        </button>
+        <button class="cb" id="volBtn" title="Volume">
+          <svg
+            class="ico-vol"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="currentColor"
+          >
+            <path
+              d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+            />
+          </svg>
+          <svg
+            class="ico-mute"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="currentColor"
+            style="display: none"
+          >
+            <path
+              d="M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.8 8.8 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"
+            />
+          </svg>
+        </button>
+        <div class="slider-wrap vol-slider" id="volWrap">
+          <div class="slider-track">
+            <div class="slider-fill" id="volFill" style="width: 70%"></div>
+            <div class="slider-dot" id="volDot" style="left: 70%"></div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>
