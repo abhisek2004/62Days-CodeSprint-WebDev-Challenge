@@ -121,10 +121,11 @@ const Form = () => {
               <div role="tabpanel">
                 <div className="mt-8 flex flex-col">
                   <div className="w-full max-w-sm min-w-[200px]">
-                    <label className="block mb-2 text-sm text-slate-600">
+                    <label htmlFor="jobProfile" className="block mb-2 text-sm text-slate-600">
                       Job Profile
                     </label>
                     <input
+                      id="jobProfile"
                       type="text"
                       onChange={(e) => setJobProfile(e.target.value)}
                       className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
@@ -132,10 +133,11 @@ const Form = () => {
                     />
                   </div>
                   <div className="w-full max-w-sm min-w-[200px] mt-4">
-                    <label className="mb-1 block text-sm text-slate-600">
+                    <label htmlFor="experienceLevel" className="mb-1 block text-sm text-slate-600">
                       Experience Level
                     </label>
                     <select
+                      id="experienceLevel"
                       onChange={(e) =>
                         setExperienceLevel(e.target.value as ExperienceLevel)
                       }
@@ -148,7 +150,7 @@ const Form = () => {
                     </select>
                   </div>
                   <div className="w-full mx-auto mt-8">
-                    <label className="mb-1 block text-sm text-slate-600">
+                    <label htmlFor="skills" className="mb-1 block text-sm text-slate-600">
                       Skills
                     </label>
                     <div className="border-2 border-gray-200 text-sm rounded-md p-1 focus-within:border-gray-200 min-h-[35px] flex flex-wrap content-start">
@@ -171,6 +173,7 @@ const Form = () => {
                       <input
                         ref={inputRef}
                         type="text"
+                        id="skills"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -183,10 +186,11 @@ const Form = () => {
                     </div>
                   </div>
 
-                  <label className="mt-4 block mb-1 text-sm text-slate-600">
+                  <label htmlFor="targetCompany" className="mt-4 block mb-1 text-sm text-slate-600">
                     Target Company
                   </label>
                   <input
+                    id="targetCompany"
                     type="text"
                     onChange={(e) => setTargetCompany(e.target.value)}
                     className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md pl-3 pr-20 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
