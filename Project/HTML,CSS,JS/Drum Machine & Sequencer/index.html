@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEQ-808 Pro Synthesizer</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="machine">
+    <div class="header">
+      <div class="brand">
+         <h1>NEQ-808</h1>
+         <p>PRO RHYTHM SYNTHESIZER</p>
+      </div>
+      
+      <div class="controls">
+         <div class="ctrl-group">
+            <label>PRESET</label>
+            <select id="preset-sel" class="neo-select">
+               <option value="house">HOUSE</option>
+               <option value="techno">TECHNO</option>
+               <option value="hiphop">HIP-HOP</option>
+            </select>
+         </div>
+         <div class="knob-group">
+            <label>SWING <span id="swing-val">0%</span></label>
+            <input type="range" id="swing" min="0" max="50" value="0">
+         </div>
+         <div class="knob-group">
+            <label>TEMPO <span id="tempo-val">120</span></label>
+            <input type="range" id="tempo" min="60" max="200" value="120">
+         </div>
+         <div class="knob-group">
+            <label>MASTER <span id="vol-val">80</span></label>
+            <input type="range" id="vol" min="0" max="100" value="80">
+         </div>
+         
+         <button id="clear-btn" class="btn-secondary">CLEAR</button>
+         <button id="play-btn" class="btn-primary">PLAY</button>
+      </div>
+    </div>
+    
+    <div id="sequencer" class="sequencer"></div>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
+</html>
