@@ -110,7 +110,7 @@ const Form = () => {
               <div className="relative right-0">
                 <div className="relative flex flex-wrap px-1.5 py-1.5 list-none rounded-md bg-slate-100">
                   <div className="z-30 flex-auto text-center">
-                    <a className="z-30 flex items-center justify-center w-fdiv px-0 py-2 text-sm mb-0 transition-all ease-in-out border-0 rounded-md cursor-pointer text-slate-600 bg-inherit">
+                    <a className="z-30 flex items-center justify-center w-div px-0 py-2 text-sm mb-0 transition-all ease-in-out border-0 rounded-md cursor-pointer text-slate-600 bg-inherit">
                       Interview Details
                     </a>
                   </div>
