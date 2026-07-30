@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client-Side Regex Benchmark Engine & Test Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-code-compare"></i>
+        <span>Regex Benchmark Engine & Test Generator</span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card editor-card">
+        <h3>Regular Expression Input</h3>
+        <div class="input-group">
+          <input type="text" id="regexPattern" value="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" placeholder="Pattern e.g. ^[a-z]+$">
+          <input type="text" id="regexFlags" value="g" style="width: 60px;" placeholder="flags">
+        </div>
+
+        <h3>Test Sample Input Text</h3>
+        <textarea id="sampleText" rows="6">test.user@company.org
+invalid-email-address@
+admin@subdomain.example.co.uk
+another.valid+alias@service.io</textarea>
+
+        <button id="runBenchmarkBtn" class="btn btn-primary"><i class="fa-solid fa-bolt"></i> Run Performance Benchmark (10,000 Iterations)</button>
+      </section>
+
+      <section class="card results-card">
+        <h3>Benchmark Metrics & Match Results</h3>
+        <div class="metric-row">
+          <span>Execution Latency:</span> <strong id="latencyMetric">0.00 ms</strong>
+        </div>
+        <div class="metric-row">
+          <span>Matches Found:</span> <strong id="matchCountMetric">0</strong>
+        </div>
+        <div class="metric-row">
+          <span>Catastrophic Backtracking Risk:</span> <strong id="riskMetric" style="color: #10b981;">SAFE</strong>
+        </div>
+
+        <hr>
+
+        <h3>Extracted Matches</h3>
+        <div id="matchOutput" class="match-box"></div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
