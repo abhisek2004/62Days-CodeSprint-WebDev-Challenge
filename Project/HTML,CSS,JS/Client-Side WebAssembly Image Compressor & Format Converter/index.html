@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client-Side Image Compressor & Format Converter</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-file-image"></i>
+        <span>Privacy-First Image Compressor & Converter</span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card upload-card">
+        <div class="drop-zone" onclick="document.getElementById('imgFile').click()">
+          <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: #38bdf8; margin-bottom: 8px;"></i>
+          <p>Click or Drag Image Here</p>
+          <input type="file" id="imgFile" accept="image/*" style="display:none;">
+        </div>
+
+        <div class="controls" style="margin-top: 16px;">
+          <label>Target Format:</label>
+          <select id="targetFormat">
+            <option value="image/jpeg">JPEG</option>
+            <option value="image/png">PNG</option>
+            <option value="image/webp">WebP</option>
+          </select>
+
+          <label style="margin-top: 12px; display: block;">Quality Level: <strong id="qualityVal">80%</strong></label>
+          <input type="range" id="qualitySlider" min="10" max="100" value="80">
+        </div>
+      </section>
+
+      <section class="card preview-card">
+        <h3>Compressed Result Preview</h3>
+        <div class="preview-box">
+          <canvas id="compressCanvas" style="max-width: 100%; border-radius: 6px;"></canvas>
+        </div>
+        <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <span id="fileSizeInfo">Upload image to compress</span>
+          <button id="downloadImgBtn" class="btn btn-primary" disabled><i class="fa-solid fa-download"></i> Download Image</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
