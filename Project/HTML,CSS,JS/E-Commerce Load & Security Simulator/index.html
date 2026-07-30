@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce Chaos & Rate-Limit Load Simulator</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-burst"></i>
+        <span>E-Commerce Chaos & Load Simulator</span>
+      </div>
+      <div class="actions">
+        <button id="downloadReportBtn" class="btn btn-outline"><i class="fa-solid fa-download"></i> Export JSON Report</button>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- Control Panel -->
+      <section class="card controls-card">
+        <h3><i class="fa-solid fa-sliders"></i> Worker Controls</h3>
+        
+        <div class="control-group">
+          <label>Target API Endpoint:</label>
+          <input type="text" id="targetUrlInput" value="https://httpbin.org/status/200,429,500">
+        </div>
+
+        <div class="control-group">
+          <label>Concurrent Concurrency Rate: <strong id="concurrencyVal">20 req/s</strong></label>
+          <input type="range" id="concurrencySlider" min="1" max="100" value="20">
+        </div>
+
+        <div class="control-group">
+          <label>Rate Limiting threshold (HTTP 429 backoff):</label>
+          <select id="backoffStrategy">
+            <option value="exponential">Exponential Backoff</option>
+            <option value="linear">Linear Backoff</option>
+            <option value="none">No Backoff (Burst Mode)</option>
+          </select>
+        </div>
+
+        <div class="button-group">
+          <button id="startLoadBtn" class="btn btn-success"><i class="fa-solid fa-play"></i> Start Load Test</button>
+          <button id="stopLoadBtn" class="btn btn-danger" disabled><i class="fa-solid fa-stop"></i> Stop</button>
+        </div>
+      </section>
+
+      <!-- Live Response Distribution Chart -->
+      <section class="card chart-card">
+        <h3><i class="fa-solid fa-chart-bar"></i> Real-Time Latency & Status Distribution</h3>
+        <div class="chart-box">
+          <canvas id="loadChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Stats Summary & Exponential Backoff Calculator -->
+      <section class="card stats-card">
+        <h3><i class="fa-solid fa-calculator"></i> Rate-Limit & Backoff Analytics</h3>
+        <div class="stat-boxes">
+          <div class="stat-box green">
+            <span class="val" id="totalReqCount">0</span>
+            <span class="lbl">Total Requests</span>
+          </div>
+          <div class="stat-box orange">
+            <span class="val" id="rateLimitCount">0</span>
+            <span class="lbl">429 Rate Limited</span>
+          </div>
+          <div class="stat-box red">
+            <span class="val" id="errorCount">0</span>
+            <span class="lbl">5xx Errors</span>
+          </div>
+        </div>
+
+        <div class="backoff-info">
+          <h4>Calculated Backoff Delay:</h4>
+          <p id="backoffOutput">Retry delay: 0ms (Normal)</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="simulator.js"></script>
+</body>
+</html>
