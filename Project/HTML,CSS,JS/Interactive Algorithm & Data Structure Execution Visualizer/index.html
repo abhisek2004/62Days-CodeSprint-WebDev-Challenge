@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Algorithm & Data Structure Execution Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-chart-simple"></i>
+        <span>Algorithm & Sorting Execution Visualizer</span>
+      </div>
+      <div class="actions">
+        <button id="generateArrBtn" class="btn btn-outline">Randomize Array</button>
+        <button id="startSortBtn" class="btn btn-primary"><i class="fa-solid fa-play"></i> Start BubbleSort</button>
+      </div>
+    </header>
+
+    <main class="visualizer-container">
+      <div class="array-bars" id="barContainer">
+        <!-- Bars injected dynamically -->
+      </div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
