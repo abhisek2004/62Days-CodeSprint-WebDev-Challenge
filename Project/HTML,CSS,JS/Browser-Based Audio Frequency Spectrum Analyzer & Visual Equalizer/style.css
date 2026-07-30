@@ -1,0 +1,80 @@
+:root {
+  --bg-dark: #0f172a;
+  --card-bg: #1e293b;
+  --text-light: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-purple: #8b5cf6;
+  --border: #334155;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 20px;
+}
+
+.app { max-width: 1000px; margin: 0 auto; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--accent-purple);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grid { display: grid; grid-template-rows: auto auto; gap: 20px; }
+
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+
+.canvas-card { height: 280px; padding: 0; overflow: hidden; }
+
+#spectrumCanvas { width: 100%; height: 100%; display: block; background: #090d16; }
+
+.eq-sliders {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.slider-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-col input[type="range"] {
+  writing-mode: bt-lr;
+  appearance: slider-vertical;
+  width: 8px;
+  height: 140px;
+}
+
+.slider-col span { font-size: 0.8rem; color: var(--text-muted); }
+
+.btn-primary {
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
