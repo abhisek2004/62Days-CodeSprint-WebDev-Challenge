@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce Fraud & Security Anomaly Inspector</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="top-header">
+      <div class="logo">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>ShieldGuard E-Commerce Fraud Inspector</span>
+      </div>
+      <div class="system-status">
+        <span class="status-indicator live"></span>
+        <span id="liveStatusText">REAL-TIME MONITORING ACTIVE</span>
+      </div>
+    </header>
+
+    <!-- Main Grid Dashboard -->
+    <main class="dashboard-grid">
+      <!-- Risk Score & Velocity Summary -->
+      <section class="card risk-card">
+        <h3><i class="fa-solid fa-gauge-high"></i> Fraud Threat Level</h3>
+        <div class="gauge-wrapper">
+          <div class="gauge-body">
+            <div class="gauge-fill" id="gaugeFill"></div>
+            <div class="gauge-cover">
+              <span id="riskScoreValue">28</span>
+              <small>Risk Score (0-100)</small>
+            </div>
+          </div>
+        </div>
+        <div class="risk-badge low" id="riskBadge">LOW THREAT</div>
+        <div class="risk-metrics">
+          <div><span>Velocity Alert:</span> <strong id="velocityMetric">Normal</strong></div>
+          <div><span>Bot Fingerprints:</span> <strong id="botMetric">2 Detected</strong></div>
+          <div><span>Quarantined IPs:</span> <strong id="quarantineCount">0</strong></div>
+        </div>
+      </section>
+
+      <!-- Real-Time Transaction Velocity Time-Series Chart -->
+      <section class="card chart-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-chart-line"></i> Transaction Velocity (Req/min)</h3>
+          <button id="simulateSpikeBtn" class="btn btn-warning"><i class="fa-solid fa-bolt"></i> Simulate Velocity Spike</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="velocityChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Geolocation Threat Map Simulation -->
+      <section class="card map-card">
+        <h3><i class="fa-solid fa-earth-americas"></i> Geo IP Threat Cluster Map</h3>
+        <div class="threat-map-container" id="threatMap">
+          <!-- Interactive Nodes will be rendered dynamically -->
+          <div class="map-overlay">
+            <div class="hotspot" style="top: 30%; left: 25%;" data-location="North America" data-threat="Low"></div>
+            <div class="hotspot high" style="top: 45%; left: 70%;" data-location="Eastern Europe" data-threat="High"></div>
+            <div class="hotspot medium" style="top: 60%; left: 80%;" data-location="SE Asia" data-threat="Medium"></div>
+          </div>
+        </div>
+        <div id="selectedClusterInfo" class="cluster-info">Click on a threat hotspot for IP quarantine actions.</div>
+      </section>
+
+      <!-- Log Inspector & Rule Engine Feed -->
+      <section class="card log-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-list-check"></i> Rule Engine Log Feed</h3>
+          <div class="filter-controls">
+            <select id="logFilterSelect">
+              <option value="ALL">All Events</option>
+              <option value="SUSPICIOUS">Suspicious Only</option>
+              <option value="BOT">Bot Fingerprints</option>
+              <option value="CARDING">Credit Carding</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>IP Address</th>
+                <th>User Agent / Device</th>
+                <th>Pattern Detected</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody">
+              <!-- JS Injected Logs -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="fraud-inspector.js"></script>
+</body>
+</html>
