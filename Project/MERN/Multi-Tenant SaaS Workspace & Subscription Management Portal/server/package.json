@@ -1,0 +1,13 @@
+{
+  "name": "multi-tenant-saas-portal-server",
+  "version": "1.0.0",
+  "description": "Multi-Tenant SaaS Workspace & Subscription Management Portal Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}
