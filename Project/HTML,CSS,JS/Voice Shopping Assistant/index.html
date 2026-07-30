@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice-Powered Shopping & Accessibility Assistant</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-microphone-lines"></i>
+        <span>AudioShop Voice Assistant</span>
+      </div>
+      <div class="shortcut-badge">
+        Press <kbd>Ctrl</kbd> + <kbd>Space</kbd> to Voice Search
+      </div>
+    </header>
+
+    <div class="voice-banner">
+      <button id="micBtn" class="mic-button">
+        <i class="fa-solid fa-microphone"></i>
+      </button>
+      <div class="voice-wave" id="voiceWave">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <p id="speechStatus">Click Mic or Press Ctrl+Space and say "Search Shoes", "Add Headphones", or "Read Cart"</p>
+    </div>
+
+    <main class="store-grid">
+      <!-- Product Catalog -->
+      <section class="products-section">
+        <h2>Product Catalog</h2>
+        <div class="product-grid" id="productGrid">
+          <!-- Dynamically Rendered Products -->
+        </div>
+      </section>
+
+      <!-- Cart Side Panel -->
+      <aside class="cart-section">
+        <h2><i class="fa-solid fa-cart-shopping"></i> Shopping Cart</h2>
+        <div class="cart-items" id="cartItems">
+          <p class="empty-msg">Your cart is empty.</p>
+        </div>
+        <div class="cart-summary">
+          <div class="total-row">
+            <span>Total Subtotal:</span>
+            <strong id="cartTotal">$0.00</strong>
+          </div>
+          <button id="voiceCheckoutBtn" class="btn-checkout"><i class="fa-solid fa-credit-card"></i> Voice Checkout</button>
+        </div>
+      </aside>
+    </main>
+  </div>
+  <script src="voice-assistant.js"></script>
+</body>
+</html>
