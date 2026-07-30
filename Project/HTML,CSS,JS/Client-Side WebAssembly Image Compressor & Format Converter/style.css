@@ -1,0 +1,72 @@
+:root {
+  --bg-dark: #0f172a;
+  --card-bg: #1e293b;
+  --text-light: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-cyan: #38bdf8;
+  --border: #334155;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 20px;
+}
+
+.app { max-width: 1000px; margin: 0 auto; }
+
+.header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+
+.drop-zone {
+  border: 2px dashed var(--accent-cyan);
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  background: #090d16;
+}
+
+select, input[type="range"] {
+  width: 100%;
+  padding: 8px;
+  background: #090d16;
+  border: 1px solid var(--border);
+  color: #fff;
+  border-radius: 6px;
+}
+
+.btn-primary {
+  background: var(--accent-cyan);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
