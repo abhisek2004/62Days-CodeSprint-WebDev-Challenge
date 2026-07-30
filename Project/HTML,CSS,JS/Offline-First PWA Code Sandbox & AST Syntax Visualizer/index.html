@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline-First PWA Code Sandbox & AST Syntax Visualizer</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-code"></i>
+        <span>PWA Code Sandbox & AST Visualizer</span>
+      </div>
+      <div class="status-badge" id="offlineBadge">
+        <i class="fa-solid fa-wifi"></i> Online
+      </div>
+    </header>
+
+    <main class="sandbox-grid">
+      <!-- Live JS Editor Panel -->
+      <section class="card editor-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-file-code"></i> JavaScript Code Editor</h3>
+          <button id="saveSnippetBtn" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Snippet</button>
+        </div>
+        <textarea id="codeEditor" spellcheck="false">// Type JavaScript code to visualize Abstract Syntax Tree (AST)
+function calculateTotal(items, taxRate) {
+  let subtotal = 0;
+  for (let item of items) {
+    subtotal += item.price;
+  }
+  return subtotal * (1 + taxRate);
+}</textarea>
+        <div id="errorBox" class="error-box hidden">Syntax Error: None</div>
+      </section>
+
+      <!-- AST Tree & Inspector -->
+      <section class="card ast-card">
+        <h3><i class="fa-solid fa-sitemap"></i> AST Structural Node Tree (JSON & Graph)</h3>
+        <div class="ast-output" id="astOutput">
+          <!-- Tree Nodes Rendered Dynamically -->
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
