@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebRTC Peer-to-Peer Encrypted File Transfer System</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-share-nodes"></i>
+        <span>WebRTC P2P Encrypted File Transfer</span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card upload-card">
+        <h3>1. Select File for P2P Transfer</h3>
+        <div class="drop-zone" onclick="document.getElementById('p2pFile').click()">
+          <i class="fa-solid fa-file-arrow-up" style="font-size: 2rem; color: #10b981; margin-bottom: 8px;"></i>
+          <p>Choose file to encrypt & share</p>
+          <input type="file" id="p2pFile" style="display:none;">
+        </div>
+        <div id="fileSelectedInfo" style="margin-top: 12px; font-size: 0.85rem; color: #94a3b8;">No file chosen</div>
+
+        <button id="createRoomBtn" class="btn btn-primary" style="margin-top: 16px;"><i class="fa-solid fa-key"></i> Generate P2P Room Code</button>
+      </section>
+
+      <section class="card status-card">
+        <h3>2. Receiver Pair Code & Transfer Progress</h3>
+        <div class="room-code-box" id="roomCodeBox">Pairing Code: <strong>P2P-8492</strong></div>
+        <div class="progress-bar-box">
+          <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
+        <div id="transferStatus" style="font-size: 0.85rem; color: #94a3b8; margin-top: 8px;">Waiting for peer connection...</div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

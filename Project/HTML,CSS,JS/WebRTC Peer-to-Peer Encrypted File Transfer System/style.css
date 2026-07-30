@@ -1,0 +1,85 @@
+:root {
+  --bg-dark: #0f172a;
+  --card-bg: #1e293b;
+  --text-light: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-green: #10b981;
+  --border: #334155;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 20px;
+}
+
+.app { max-width: 1000px; margin: 0 auto; }
+
+.header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--accent-green);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+
+.drop-zone {
+  border: 2px dashed var(--accent-green);
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  background: #090d16;
+}
+
+.room-code-box {
+  background: #090d16;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--accent-green);
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+
+.progress-bar-box {
+  height: 12px;
+  background: #090d16;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent-green);
+  transition: width 0.3s;
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--accent-green);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
