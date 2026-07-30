@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Git Branching & Merge Conflict Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-code-branch"></i>
+        <span>Interactive Git Branching & DAG Graph Visualizer</span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- Terminal Interface -->
+      <section class="card terminal-card">
+        <h3><i class="fa-solid fa-terminal"></i> Git Terminal Emulator</h3>
+        <div class="terminal-log" id="terminalLog">
+          <div>Git DAG Visualizer v1.0 initialized. Type 'git commit', 'git branch &lt;name&gt;', 'git checkout &lt;branch&gt;', or 'git merge &lt;branch&gt;'.</div>
+        </div>
+        <div class="input-line">
+          <span>$ </span>
+          <input type="text" id="terminalInput" placeholder="git commit -m 'Add feature'">
+        </div>
+      </section>
+
+      <!-- DAG Node Tree Visualizer -->
+      <section class="card graph-card">
+        <h3><i class="fa-solid fa-diagram-project"></i> Active Git Topology Graph</h3>
+        <div class="graph-box" id="graphBox">
+          <!-- Commit Nodes Injected Dynamically -->
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
