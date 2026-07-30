@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Annotator & Digital Signature Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <i class="fa-solid fa-file-signature"></i>
+        <span>PDF Canvas Annotator & Signature Studio</span>
+      </div>
+      <div class="header-actions">
+        <input type="file" id="pdfFileInput" accept="application/pdf" style="display:none;">
+        <button class="btn" onclick="document.getElementById('pdfFileInput').click()"><i class="fa-solid fa-upload"></i> Open PDF</button>
+        <button id="exportPdfBtn" class="btn btn-primary"><i class="fa-solid fa-download"></i> Export PDF</button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <button class="tool-btn active" id="toolBrush"><i class="fa-solid fa-pen"></i> Freehand Draw</button>
+      <button class="tool-btn" id="toolText"><i class="fa-solid fa-font"></i> Add Text</button>
+      <button class="tool-btn" id="toolSignature"><i class="fa-solid fa-signature"></i> Add Signature</button>
+      <input type="color" id="strokeColor" value="#ef4444">
+      <input type="range" id="strokeWidth" min="1" max="10" value="3">
+      <button class="btn btn-sm btn-danger" id="clearCanvasBtn">Clear Page Layer</button>
+    </div>
+
+    <main class="canvas-viewport">
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <canvas id="annotationCanvas" width="800" height="1000"></canvas>
+      </div>
+    </main>
+  </div>
+
+  <!-- Signature Modal -->
+  <div class="modal-overlay hidden" id="sigModal">
+    <div class="modal">
+      <h3>Draw Your Digital Signature</h3>
+      <canvas id="sigPadCanvas" width="400" height="160"></canvas>
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="clearSigPad">Clear</button>
+        <button class="btn btn-primary" id="applySig">Insert Signature</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
