@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberThread Matrix // Multi-Threading Web Worker Engine</title>
+    <meta name="description" content="High-performance client-side parallel matrix multiplication engine utilizing Web Workers, SharedArrayBuffer, and Transferable objects with real-time UI thread responsiveness benchmarking.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="cyber-bg-overlay"></div>
+    <div class="scanline"></div>
+
+    <div class="app-container">
+        <!-- TOP HUD SYSTEM HEADER -->
+        <header class="hud-header">
+            <div class="brand-title">
+                <div class="cyber-glitch-box">
+                    <span class="cyber-icon">⚡</span>
+                    <h1 class="glitch-text" data-text="CYBERTHREAD // V3.6">CYBERTHREAD // V3.6</h1>
+                </div>
+                <div class="sub-title">Web Worker Parallel Matrix Multiplication Engine</div>
+            </div>
+
+            <div class="hud-system-telemetry">
+                <div class="telemetry-badge" title="Detected Logical CPU Cores">
+                    <span class="badge-label">CPU CORES:</span>
+                    <span class="badge-value neon-cyan" id="sys-cores-count">--</span>
+                </div>
+                <div class="telemetry-badge" title="SharedArrayBuffer Support">
+                    <span class="badge-label">SAB MODE:</span>
+                    <span class="badge-value" id="sys-sab-status">CHECKING...</span>
+                </div>
+                <div class="telemetry-badge" title="Active Web Workers Pool">
+                    <span class="badge-label">ACTIVE WORKERS:</span>
+                    <span class="badge-value neon-emerald" id="sys-active-workers">0</span>
+                </div>
+                <div class="telemetry-badge" title="System Engine Status">
+                    <span class="badge-label">ENGINE STATUS:</span>
+                    <span class="badge-value status-ready" id="sys-engine-status">IDLE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD GRID -->
+        <main class="dashboard-grid">
+            
+            <!-- LEFT COLUMN: CONTROLS & MAIN THREAD MONITOR -->
+            <section class="panel-column controls-column">
+                
+                <!-- PARAMETER CONFIGURATION PANEL -->
+                <div class="cyber-card control-panel">
+                    <div class="card-header">
+                        <span class="header-icon">⚙️</span>
+                        <h2>ENGINE CONFIGURATION</h2>
+                        <div class="corner-accents"><span></span><span></span></div>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- MATRIX SIZE SELECTOR -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <label for="matrix-size-slider">MATRIX DIMENSION (N × N)</label>
+                                <span class="val-display neon-cyan" id="matrix-size-val">500 × 500</span>
+                            </div>
+                            <input type="range" id="matrix-size-slider" min="100" max="1600" step="100" value="500">
+                            <div class="slider-ticks">
+                                <span onclick="setMatrixSize(250)">250</span>
+                                <span onclick="setMatrixSize(500)">500</span>
+                                <span onclick="setMatrixSize(800)">800</span>
+                                <span onclick="setMatrixSize(1200)">1200</span>
+                                <span onclick="setMatrixSize(1600)">1600</span>
+                            </div>
+                            <div class="meta-info">
+                                <span>Elements per matrix: <strong id="matrix-elements-count">250,000</strong></span>
+                                <span>Memory: <strong id="matrix-memory-size">1.0 MB / Matrix</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- THREAD COUNT SLIDER -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <label for="worker-threads-slider">WORKER THREAD COUNT</label>
+                                <span class="val-display neon-emerald" id="worker-threads-val">4 Threads</span>
+                            </div>
+                            <input type="range" id="worker-threads-slider" min="1" max="16" step="1" value="4">
+                            <div class="slider-ticks">
+                                <span>1</span>
+                                <span>2</span>
+                                <span>4</span>
+                                <span>8</span>
+                                <span>12</span>
+                                <span>16</span>
+                            </div>
+                        </div>
+
+                        <!-- TRANSFER MODE TOGGLE -->
+                        <div class="control-group">
+                            <label>MEMORY MANAGEMENT MODE</label>
+                            <div class="toggle-mode-group">
+                                <button class="mode-btn active" id="mode-transferable-btn" onclick="setTransferMode('transferable')">
+                                    <span class="mode-icon">🔄</span>
+                                    <span class="mode-text">
+                                        <strong>Transferable ArrayBuffer</strong>
+                                        <small>Zero-copy array buffer transfer</small>
+                                    </span>
+                                </button>
+                                <button class="mode-btn" id="mode-sab-btn" onclick="setTransferMode('sab')">
+                                    <span class="mode-icon">⚡</span>
+                                    <span class="mode-text">
+                                        <strong>SharedArrayBuffer</strong>
+                                        <small>Direct lock-free shared memory</small>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="sab-warning-box hidden" id="sab-warning">
+                                ⚠️ Cross-Origin Isolation headers (COOP/COEP) not active in current environment. SharedArrayBuffer auto-falls back to high-performance zero-copy ArrayBuffer transfer mode.
+                            </div>
+                        </div>
+
+                        <!-- WORKLOAD SPLIT ALGORITHM -->
+                        <div class="control-group">
+                            <label for="algorithm-select">PARTITIONING STRATEGY</label>
+                            <select id="algorithm-select" class="cyber-select">
+                                <option value="row-block">Contiguous Row-Block Distribution</option>
+                                <option value="tiled">Cache-Aware Tiled Block Matrix Multiplication</option>
+                            </select>
+                        </div>
+
+                        <!-- ACTION BUTTONS -->
+                        <div class="action-btn-group">
+                            <button class="cyber-btn primary" id="btn-run-multi" onclick="runMultiThreaded()">
+                                <span class="btn-glow"></span>
+                                🚀 EXECUTE MULTI-THREADED
+                            </button>
+                            <button class="cyber-btn warning" id="btn-run-single" onclick="runSingleThreaded()">
+                                ⚡ EXECUTE SINGLE-THREADED
+                            </button>
+                            <button class="cyber-btn accent" id="btn-run-benchmark" onclick="runFullBenchmarkSuite()">
+                                📊 RUN BENCHMARK SUITE (1 to 16 Threads)
+                            </button>
+                            <button class="cyber-btn danger hidden" id="btn-abort" onclick="abortCalculation()">
+                                🛑 ABORT WORKERS
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- LIVE MAIN THREAD RESPONSIVENESS MONITOR -->
+                <div class="cyber-card thread-monitor-card">
+                    <div class="card-header">
+                        <span class="header-icon">🔄</span>
+                        <h2>MAIN UI THREAD RESPONSIVENESS MONITOR</h2>
+                        <div class="live-indicator">
+                            <span class="pulsing-dot"></span> LIVE
+                        </div>
+                    </div>
+                    <div class="card-body monitor-body">
+                        
+                        <div class="monitor-top-row">
+                            <!-- 3D LIVE REACTOR SPINNER CANVAS -->
+                            <div class="reactor-container" title="Continuous 60FPS UI thread rendering reactor">
+                                <canvas id="reactor-canvas" width="160" height="160"></canvas>
+                                <div class="reactor-label">MAIN THREAD REACTOR</div>
+                            </div>
+
+                            <!-- REAL-TIME FPS DISPLAY -->
+                            <div class="fps-display-box">
+                                <div class="fps-title">MAIN UI FRAME RATE</div>
+                                <div class="fps-value-container">
+                                    <span class="fps-num neon-cyan" id="live-fps-val">60.0</span>
+                                    <span class="fps-unit">FPS</span>
+                                </div>
+                                <div class="fps-status" id="fps-status-text">THREAD UNBLOCKED (60 FPS)</div>
+                                <div class="thread-lag-badge" id="thread-lag-badge">STUTTER DETECTED: 0ms</div>
+                            </div>
+                        </div>
+
+                        <!-- FPS HISTOGRAM GRAPH CANVAS -->
+                        <div class="fps-graph-wrapper">
+                            <div class="graph-title">REAL-TIME FRAME LATENCY (LAST 10 SECONDS)</div>
+                            <canvas id="fps-graph-canvas" width="400" height="70"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- RIGHT COLUMN: BENCHMARKS, WORKER HUD & CHARTS -->
+            <section class="panel-column results-column">
+                
+                <!-- SIDE-BY-SIDE BENCHMARK COMPARISON -->
+                <div class="cyber-card benchmark-card">
+                    <div class="card-header">
+                        <span class="header-icon">⚔️</span>
+                        <h2>SIDE-BY-SIDE EXECUTION BENCHMARK</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="comparison-grid">
+                            
+                            <!-- SINGLE THREAD RESULT BOX -->
+                            <div class="comp-box single-thread-box">
+                                <div class="comp-box-header">
+                                    <span class="box-tag">MAIN THREAD</span>
+                                    <h3>SINGLE-THREADED</h3>
+                                </div>
+                                <div class="comp-metric-main">
+                                    <span class="metric-val" id="single-time">--</span>
+                                    <span class="metric-unit">ms</span>
+                                </div>
+                                <div class="comp-sub-metrics">
+                                    <div class="sub-m">
+                                        <span>GFLOPS:</span>
+                                        <strong id="single-gflops">--</strong>
+                                    </div>
+                                    <div class="sub-m">
+                                        <span>UI Freeze Duration:</span>
+                                        <strong class="neon-magenta" id="single-freeze">0 ms</strong>
+                                    </div>
+                                </div>
+                                <div class="comp-status-bar" id="single-status-bar">Awaiting test...</div>
+                            </div>
+
+                            <!-- VS BADGE -->
+                            <div class="vs-divider">
+                                <span class="vs-circle">VS</span>
+                                <div class="speedup-display hidden" id="speedup-badge-box">
+                                    <div class="speedup-num neon-emerald" id="speedup-factor">0.0×</div>
+                                    <div class="speedup-label">FASTER</div>
+                                </div>
+                            </div>
+
+                            <!-- MULTI THREAD RESULT BOX -->
+                            <div class="comp-box multi-thread-box highlight-border">
+                                <div class="comp-box-header">
+                                    <span class="box-tag neon-emerald-bg">PARALLEL WORKERS</span>
+                                    <h3>MULTI-THREADED</h3>
+                                </div>
+                                <div class="comp-metric-main">
+                                    <span class="metric-val neon-emerald" id="multi-time">--</span>
+                                    <span class="metric-unit">ms</span>
+                                </div>
+                                <div class="comp-sub-metrics">
+                                    <div class="sub-m">
+                                        <span>GFLOPS:</span>
+                                        <strong class="neon-emerald" id="multi-gflops">--</strong>
+                                    </div>
+                                    <div class="sub-m">
+                                        <span>Parallel Efficiency:</span>
+                                        <strong class="neon-cyan" id="multi-efficiency">-- %</strong>
+                                    </div>
+                                </div>
+                                <div class="comp-status-bar positive" id="multi-status-bar">Awaiting test...</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WORKER THREAD POOL HUD -->
+                <div class="cyber-card worker-pool-card">
+                    <div class="card-header">
+                        <span class="header-icon">🧵</span>
+                        <h2>WORKER THREAD POOL MONITOR</h2>
+                        <div class="pool-summary">
+                            <span id="pool-active-count">0</span> / <span id="pool-total-count">4</span> WORKERS ACTIVE
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="worker-grid" id="worker-grid-container">
+                            <!-- Dynamically generated worker status cards -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EXECUTION CHARTS PANEL -->
+                <div class="cyber-card charts-card">
+                    <div class="card-header">
+                        <span class="header-icon">📈</span>
+                        <h2>SCALABILITY & SPEEDUP CHARTS</h2>
+                        <div class="chart-tabs">
+                            <button class="tab-btn active" id="tab-speedup" onclick="switchChartTab('speedup')">Speedup Curve</button>
+                            <button class="tab-btn" id="tab-time" onclick="switchChartTab('time')">Execution Time</button>
+                            <button class="tab-btn" id="tab-gflops" onclick="switchChartTab('gflops')">GFLOPS Throughput</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="performance-chart-canvas" width="700" height="240"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MATRIX VALIDATION & TERMINAL LOGS -->
+                <div class="cyber-card logs-card">
+                    <div class="card-header">
+                        <span class="header-icon">💻</span>
+                        <h2>SYSTEM TERMINAL & ACCURACY CHECKSUM</h2>
+                        <div class="checksum-badge badge-neutral" id="checksum-badge">
+                            CHECKSUM: UNVERIFIED
+                        </div>
+                    </div>
+                    <div class="card-body terminal-body">
+                        <div class="terminal-output" id="terminal-log">
+                            <div class="log-line sys">[SYSTEM INIT] CyberThread Matrix Engine initialized. Ready for compute tasks.</div>
+                            <div class="log-line info">[HARDWARE] Logical Processors Detected: <span class="neon-cyan" id="term-cores">--</span>.</div>
+                        </div>
+                        <div class="matrix-preview-row">
+                            <button class="cyber-btn btn-sm" onclick="inspectMatrixSample()">🔍 INSPECT RESULT MATRIX SAMPLE</button>
+                            <button class="cyber-btn btn-sm" onclick="clearLogs()">🧹 CLEAR LOGS</button>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- MATRIX SAMPLE INSPECTOR MODAL -->
+    <div class="modal-overlay hidden" id="matrix-modal">
+        <div class="cyber-card modal-card">
+            <div class="card-header">
+                <span class="header-icon">🔢</span>
+                <h2>RESULT MATRIX (C = A × B) INSPECTION</h2>
+                <button class="close-modal-btn" onclick="closeMatrixModal()">✖</button>
+            </div>
+            <div class="card-body modal-body">
+                <p>Showing 6×6 Sub-Matrix Corner Sample of Result Matrix C (<span id="modal-dim-text">500×500</span>):</p>
+                <div class="matrix-table-container">
+                    <table class="cyber-matrix-table" id="matrix-sample-table">
+                        <!-- Filled by JS -->
+                    </table>
+                </div>
+                <div class="modal-checksum-info" id="modal-checksum-details">
+                    Checksum hash validation details will appear here after calculation.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="worker-engine.js"></script>
+</body>
+</html>
