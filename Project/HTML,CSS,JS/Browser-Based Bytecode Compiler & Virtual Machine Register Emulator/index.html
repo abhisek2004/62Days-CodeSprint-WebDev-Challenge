@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browser-Based Bytecode Compiler & Virtual Machine Register Emulator with real-time memory visualizer, register state inspector, and step-by-step debugger.">
+    <title>Browser-Based Bytecode Compiler & Virtual Machine Register Emulator</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Main Top Navigation / Header -->
+        <header class="app-header">
+            <div class="brand-section">
+                <div class="cpu-logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                        <rect x="9" y="9" width="6" height="6"></rect>
+                        <line x1="9" y1="1" x2="9" y2="4"></line>
+                        <line x1="15" y1="1" x2="15" y2="4"></line>
+                        <line x1="9" y1="20" x2="9" y2="23"></line>
+                        <line x1="15" y1="20" x2="15" y2="23"></line>
+                        <line x1="20" y1="9" x2="23" y2="9"></line>
+                        <line x1="20" y1="15" x2="23" y2="15"></line>
+                        <line x1="1" y1="9" x2="4" y2="9"></line>
+                        <line x1="1" y1="15" x2="4" y2="15"></line>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="app-title">BYTECODE VM STUDIO</h1>
+                    <p class="app-subtitle">8-Bit Virtual CPU Register & Memory Emulator</p>
+                </div>
+            </div>
+
+            <!-- Global Control QuickBar -->
+            <div class="header-controls">
+                <div class="control-group sample-group">
+                    <label for="sample-program-select">Sample Code:</label>
+                    <select id="sample-program-select" class="custom-select">
+                        <option value="fibonacci">Fibonacci Sequence</option>
+                        <option value="factorial">Factorial Calculator</option>
+                        <option value="array_sum">Array Summation</option>
+                        <option value="stack_demo">Stack & Subroutine (CALL/RET)</option>
+                        <option value="counter_loop">Counter & Memory Loop</option>
+                    </select>
+                </div>
+
+                <div class="system-status-badge idled" id="system-status-badge">
+                    <span class="status-dot"></span>
+                    <span id="status-text">IDLE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Primary Workspace Grid Layout -->
+        <main class="workspace-grid">
+            
+            <!-- COLUMN 1: Assembly Code Editor & Bytecode Assembler -->
+            <section class="panel editor-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                        Assembly Source Editor
+                    </div>
+                    <div class="panel-actions">
+                        <button id="btn-assemble" class="btn btn-primary" title="Compile Assembly to Bytecode (Ctrl+Enter)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            Assemble & Load
+                        </button>
+                        <button id="btn-clear-code" class="btn btn-secondary" title="Clear Editor">Clear</button>
+                    </div>
+                </div>
+
+                <div class="editor-container">
+                    <div class="line-numbers" id="line-numbers">1</div>
+                    <textarea id="assembly-code" class="code-textarea" spellcheck="false" placeholder="Write custom Assembly code here..."></textarea>
+                </div>
+
+                <!-- Bytecode Machine Code Inspector -->
+                <div class="panel-sub-section">
+                    <div class="sub-header">
+                        <span>Compiled Hex Bytecode</span>
+                        <span id="bytecode-size" class="size-badge">0 Bytes</span>
+                    </div>
+                    <div id="bytecode-output" class="hex-bytecode-display">
+                        <span class="placeholder-text">Click "Assemble & Load" to generate hex machine code...</span>
+                    </div>
+                </div>
+
+                <!-- Compiler Console Log -->
+                <div class="panel-sub-section console-section">
+                    <div class="sub-header">
+                        <span>Assembler Console Log</span>
+                        <button id="btn-clear-console" class="btn-text">Clear Log</button>
+                    </div>
+                    <div id="console-output" class="console-box">
+                        <div class="log-entry info">[SYSTEM] Virtual Machine initialized. Ready to assemble.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLUMN 2: Virtual CPU Registers & Debugger Controls -->
+            <section class="panel cpu-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                        CPU Registers & Debugger
+                    </div>
+                    <button id="btn-cheat-sheet" class="btn btn-icon" title="Instruction Set Reference">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </button>
+                </div>
+
+                <!-- Debug Execution Controls Bar -->
+                <div class="debug-controls-card">
+                    <div class="control-btn-group">
+                        <button id="btn-run" class="btn btn-success btn-lg" title="Run Execution (F5)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            Run
+                        </button>
+                        <button id="btn-pause" class="btn btn-warning btn-lg" disabled title="Pause Execution">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                            Pause
+                        </button>
+                        <button id="btn-step" class="btn btn-info btn-lg" title="Single Step (F10)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
+                            Step
+                        </button>
+                        <button id="btn-reset" class="btn btn-danger btn-lg" title="Reset CPU State (Esc)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                            Reset
+                        </button>
+                    </div>
+
+                    <!-- Execution Speed Slider -->
+                    <div class="speed-slider-container">
+                        <div class="speed-header">
+                            <label for="speed-slider">Clock Speed:</label>
+                            <span id="speed-value" class="speed-readout">10 Hz</span>
+                        </div>
+                        <input type="range" id="speed-slider" min="1" max="100" value="10" class="custom-range">
+                    </div>
+                </div>
+
+                <!-- Current Instruction Highlight Box -->
+                <div class="current-instruction-card">
+                    <div class="card-label">CURRENT INSTRUCTION PIPELINE</div>
+                    <div class="instruction-display" id="curr-instruction-text">-- HALT / IDLE --</div>
+                    <div class="instruction-details">
+                        <span>Address: <strong id="curr-pc-addr">0x00</strong></span>
+                        <span>Opcode: <strong id="curr-opcode">0x00</strong></span>
+                        <span>Cycles: <strong id="cycle-count">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Registers State Grid -->
+                <div class="registers-grid">
+                    <!-- PC -->
+                    <div class="register-card special-pc" id="reg-card-PC">
+                        <div class="reg-name">PC <span class="reg-desc">Program Counter</span></div>
+                        <div class="reg-value-hex" id="reg-PC">0x00</div>
+                        <div class="reg-value-dec" id="reg-PC-dec">(0)</div>
+                    </div>
+
+                    <!-- SP -->
+                    <div class="register-card special-sp" id="reg-card-SP">
+                        <div class="reg-name">SP <span class="reg-desc">Stack Pointer</span></div>
+                        <div class="reg-value-hex" id="reg-SP">0xFF</div>
+                        <div class="reg-value-dec" id="reg-SP-dec">(255)</div>
+                    </div>
+
+                    <!-- ACC -->
+                    <div class="register-card special-acc" id="reg-card-ACC">
+                        <div class="reg-name">ACC <span class="reg-desc">Accumulator</span></div>
+                        <div class="reg-value-hex" id="reg-ACC">0x00</div>
+                        <div class="reg-value-dec" id="reg-ACC-dec">(0)</div>
+                    </div>
+
+                    <!-- R0 -->
+                    <div class="register-card" id="reg-card-R0">
+                        <div class="reg-name">R0 <span class="reg-desc">General Reg</span></div>
+                        <div class="reg-value-hex" id="reg-R0">0x00</div>
+                        <div class="reg-value-dec" id="reg-R0-dec">(0)</div>
+                    </div>
+
+                    <!-- R1 -->
+                    <div class="register-card" id="reg-card-R1">
+                        <div class="reg-name">R1 <span class="reg-desc">General Reg</span></div>
+                        <div class="reg-value-hex" id="reg-R1">0x00</div>
+                        <div class="reg-value-dec" id="reg-R1-dec">(0)</div>
+                    </div>
+
+                    <!-- R2 -->
+                    <div class="register-card" id="reg-card-R2">
+                        <div class="reg-name">R2 <span class="reg-desc">General Reg</span></div>
+                        <div class="reg-value-hex" id="reg-R2">0x00</div>
+                        <div class="reg-value-dec" id="reg-R2-dec">(0)</div>
+                    </div>
+
+                    <!-- R3 -->
+                    <div class="register-card" id="reg-card-R3">
+                        <div class="reg-name">R3 <span class="reg-desc">General Reg</span></div>
+                        <div class="reg-value-hex" id="reg-R3">0x00</div>
+                        <div class="reg-value-dec" id="reg-R3-dec">(0)</div>
+                    </div>
+                </div>
+
+                <!-- Status Flags Indicator Panel -->
+                <div class="flags-card">
+                    <div class="card-label">ALU STATUS FLAGS</div>
+                    <div class="flags-list">
+                        <div class="flag-badge" id="flag-Z">
+                            <span class="flag-code">Z</span>
+                            <span class="flag-title">ZERO</span>
+                        </div>
+                        <div class="flag-badge" id="flag-C">
+                            <span class="flag-code">C</span>
+                            <span class="flag-title">CARRY</span>
+                        </div>
+                        <div class="flag-badge" id="flag-N">
+                            <span class="flag-code">N</span>
+                            <span class="flag-title">NEGATIVE</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLUMN 3: Memory & Stack Visualizer -->
+            <section class="panel memory-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                        256-Byte Memory & Stack Visualizer
+                    </div>
+                    <div class="memory-legend">
+                        <span class="legend-item pc"><span class="color-box"></span> PC</span>
+                        <span class="legend-item sp"><span class="color-box"></span> SP</span>
+                        <span class="legend-item code"><span class="color-box"></span> Code</span>
+                        <span class="legend-item stack"><span class="color-box"></span> Stack</span>
+                        <span class="legend-item ram"><span class="color-box"></span> RAM Data</span>
+                    </div>
+                </div>
+
+                <!-- Memory Filtering & Quick Jump -->
+                <div class="memory-filter-bar">
+                    <div class="tab-group" id="memory-tabs">
+                        <button class="tab-btn active" data-range="all">All (0x00 - 0xFF)</button>
+                        <button class="tab-btn" data-range="code">Code (0x00 - 0x3F)</button>
+                        <button class="tab-btn" data-range="ram">RAM (0x80 - 0xCF)</button>
+                        <button class="tab-btn" data-range="stack">Stack (0xD0 - 0xFF)</button>
+                    </div>
+                    <div class="address-inspector" id="hover-address-info">
+                        Hover over a memory cell...
+                    </div>
+                </div>
+
+                <!-- 256 Cell Memory Grid Matrix -->
+                <div class="memory-grid-container" id="memory-grid-container">
+                    <div class="memory-grid" id="memory-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- Dedicated Stack Memory Tower View -->
+                <div class="panel-sub-section stack-section">
+                    <div class="sub-header">
+                        <span>Live Call Stack Inspector</span>
+                        <span class="sub-desc">SP Top = <strong id="stack-top-addr">0xFF</strong></span>
+                    </div>
+                    <div id="stack-view-container" class="stack-view-box">
+                        <div class="empty-stack-msg">Stack is currently empty (SP at 0xFF)</div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer Bar with Keyboard Shortcuts -->
+        <footer class="app-footer">
+            <div class="footer-info">
+                <span>Keyboard Shortcuts:</span>
+                <kbd>F5</kbd> / <kbd>Space</kbd> Run/Pause &nbsp;|&nbsp;
+                <kbd>F10</kbd> Step &nbsp;|&nbsp;
+                <kbd>Esc</kbd> Reset &nbsp;|&nbsp;
+                <kbd>Ctrl+Enter</kbd> Assemble
+            </div>
+            <div class="footer-specs">
+                <span>Architecture: 8-Bit RISC-like | Word Size: 1 Byte | Memory: 256 Bytes</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Cheat Sheet / Instruction Set Modal -->
+    <div id="modal-cheat-sheet" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Virtual CPU Instruction Set Reference</h3>
+                <button id="btn-close-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="cheat-table">
+                    <thead>
+                        <tr>
+                            <th>Instruction</th>
+                            <th>Syntax Examples</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge-op">LOAD</span></td>
+                            <td><code>LOAD ACC, 10</code><br><code>LOAD R0, [0x80]</code></td>
+                            <td>Loads immediate value or value at memory address into register (ACC, R0..R3).</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">STORE</span></td>
+                            <td><code>STORE ACC, [0x80]</code><br><code>STORE R1, [0x85]</code></td>
+                            <td>Stores register content into target memory address (0x00 - 0xFF).</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">MOV</span></td>
+                            <td><code>MOV R0, ACC</code><br><code>MOV R1, 5</code></td>
+                            <td>Copies source register or immediate value into destination register.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">ADD</span></td>
+                            <td><code>ADD ACC, R0</code><br><code>ADD ACC, 15</code></td>
+                            <td>Adds register or immediate value to ACC. Updates Zero (Z) & Carry (C) flags.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">SUB</span></td>
+                            <td><code>SUB ACC, R1</code><br><code>SUB ACC, 1</code></td>
+                            <td>Subtracts value from ACC. Updates Zero (Z) & Carry (C) flags.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">INC / DEC</span></td>
+                            <td><code>INC R0</code><br><code>DEC R2</code></td>
+                            <td>Increments or decrements target register value by 1.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">CMP</span></td>
+                            <td><code>CMP R0, R1</code><br><code>CMP R0, 0</code></td>
+                            <td>Compares two operands by computing subtraction without saving result. Sets Z and C flags.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">JMP</span></td>
+                            <td><code>JMP LOOP</code><br><code>JMP 0x10</code></td>
+                            <td>Unconditional jump to label or memory address. Sets PC to target address.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">JZ / JNZ</span></td>
+                            <td><code>JZ DONE</code><br><code>JNZ LOOP</code></td>
+                            <td>Jump if Zero flag is set (JZ) or Jump if Zero flag is clear (JNZ).</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">PUSH</span></td>
+                            <td><code>PUSH R0</code><br><code>PUSH 42</code></td>
+                            <td>Decrements SP and pushes register or immediate value onto stack.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">POP</span></td>
+                            <td><code>POP R1</code></td>
+                            <td>Pops top value from stack into target register and increments SP.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">CALL / RET</span></td>
+                            <td><code>CALL SUBROUTINE</code><br><code>RET</code></td>
+                            <td>CALL pushes return address to stack and jumps. RET pops return address into PC.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-op">HALT</span></td>
+                            <td><code>HALT</code></td>
+                            <td>Stops Virtual Machine CPU execution loop.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="vm-emulator.js"></script>
+</body>
+</html>
