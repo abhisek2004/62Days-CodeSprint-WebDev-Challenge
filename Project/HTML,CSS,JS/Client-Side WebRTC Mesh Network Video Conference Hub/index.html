@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeshPulse E2EE WebRTC Mesh Conference Hub</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation / Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <div class="logo-icon"><i class="fa-solid fa-network-wired"></i></div>
+          <span class="brand-name">Mesh<span class="highlight">Pulse</span></span>
+          <span class="badge-mesh">Mesh WebRTC</span>
+        </div>
+        <div class="room-info">
+          <div class="room-title-wrapper">
+            <h2 id="roomTitleDisplay">Room: <span id="currentRoomName">mesh-sec-884</span></h2>
+            <button class="btn-icon-sm" id="btnEditRoom" title="Change Room ID">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </div>
+          <div class="room-status-badge">
+            <span class="status-dot online"></span>
+            <span id="meshStatusText">Mesh Active (1 Peer)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="e2ee-status-indicator" id="e2eeBadge" title="End-to-End Encrypted Session">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>E2EE Active (AES-256-GCM)</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button class="btn-secondary" id="btnInvite">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Invite Peers</span>
+        </button>
+        <button class="btn-secondary" id="btnSimulatePeers">
+          <i class="fa-solid fa-robot"></i>
+          <span>Simulate Mesh (+1)</span>
+        </button>
+        <div class="layout-toggle">
+          <button class="btn-icon active" id="btnLayoutGrid" title="Grid View"><i class="fa-solid fa-border-all"></i></button>
+          <button class="btn-icon" id="btnLayoutSpeaker" title="Focus Speaker View"><i class="fa-solid fa-user"></i></button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Conference Workspace -->
+    <main class="conference-body">
+      <!-- Left: Video Grid Area -->
+      <section class="video-workspace" id="videoWorkspace">
+        <div class="video-grid grid-mode-1" id="videoGrid">
+          <!-- Local User Stream Tile -->
+          <div class="video-tile local-tile" id="localTile" data-peer-id="local-user">
+            <div class="video-wrapper">
+              <video id="localVideo" autoplay playsinline muted></video>
+              <canvas id="localCanvasFilter" class="canvas-filter hidden"></canvas>
+              
+              <!-- Video Placeholder / Camera Off State -->
+              <div class="video-placeholder hidden" id="localPlaceholder">
+                <div class="avatar-circle">
+                  <span id="localAvatarInitials">YOU</span>
+                </div>
+                <p>Camera is paused</p>
+              </div>
+
+              <!-- Live Audio Waveform / Visualizer -->
+              <div class="audio-spectrum-bar" id="localAudioSpectrum">
+                <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+              </div>
+
+              <!-- Tile Header Info -->
+              <div class="tile-top-bar">
+                <span class="peer-badge local-tag">You (Host)</span>
+                <div class="tile-status-icons">
+                  <span class="status-tag encryption-tag" title="End-to-End Encrypted"><i class="fa-solid fa-lock"></i> E2EE</span>
+                  <span class="status-tag quality-tag" id="localQualityBadge">HQ</span>
+                </div>
+              </div>
+
+              <!-- Tile Bottom Overlay -->
+              <div class="tile-bottom-bar">
+                <span class="peer-name" id="localPeerName">You (Local Peer)</span>
+                <div class="media-states">
+                  <span class="media-icon mic-state" id="localMicIndicator" title="Microphone Active"><i class="fa-solid fa-microphone"></i></span>
+                  <span class="media-icon cam-state" id="localCamIndicator" title="Camera Active"><i class="fa-solid fa-video"></i></span>
+                </div>
+              </div>
+
+              <!-- Stats HUD Overlay -->
+              <div class="tile-stats-hud hidden" id="localStatsHud">
+                <div class="hud-item"><span class="hud-label">FPS:</span> <span class="hud-val" id="localFpsVal">30</span></div>
+                <div class="hud-item"><span class="hud-label">Res:</span> <span class="hud-val" id="localResVal">1280x720</span></div>
+                <div class="hud-item"><span class="hud-label">Bitrate:</span> <span class="hud-val" id="localBitrateVal">2.4 Mbps</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- Dynamic Peer Tiles will be appended here by JS -->
+        </div>
+
+        <!-- Speaker View Spotlight Container (Hidden by default) -->
+        <div class="speaker-layout-container hidden" id="speakerLayout">
+          <div class="main-speaker-stage" id="mainSpeakerStage">
+            <!-- Focused video tile gets cloned/moved here -->
+          </div>
+          <div class="speaker-thumbnail-strip" id="speakerThumbnails">
+            <!-- Other peer tiles thumbnails -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Drawer Panels (Chat / Network Metrics / Topology / Mesh Simulator) -->
+      <aside class="side-panel collapsed" id="sidePanel">
+        <div class="panel-header-tabs">
+          <button class="tab-btn active" data-tab="chat">
+            <i class="fa-solid fa-comments"></i>
+            <span>Chat</span>
+            <span class="badge-unread hidden" id="chatUnreadBadge">0</span>
+          </button>
+          <button class="tab-btn" data-tab="metrics">
+            <i class="fa-solid fa-chart-network"></i>
+            <span>Metrics</span>
+          </button>
+          <button class="tab-btn" data-tab="topology">
+            <i class="fa-solid fa-diagram-project"></i>
+            <span>Topology</span>
+          </button>
+          <button class="tab-btn" data-tab="simulation">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Sim Sandbox</span>
+          </button>
+          <button class="btn-icon close-panel-btn" id="btnClosePanel"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="panel-content">
+          <!-- Chat Panel -->
+          <div class="tab-content active" id="tab-chat">
+            <div class="chat-header-info">
+              <div class="e2ee-notice">
+                <i class="fa-solid fa-lock"></i>
+                <p>Messages are E2E encrypted with AES-GCM before broadcast across the mesh nodes.</p>
+              </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+              <div class="system-message">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Mesh session initialized. Shared encryption key computed via WebCrypto.</span>
+              </div>
+            </div>
+
+            <div class="chat-input-area">
+              <div class="chat-toolbar">
+                <button class="btn-icon-xs" id="btnToggleRawCipher" title="Toggle Raw Ciphertext View Mode">
+                  <i class="fa-solid fa-code"></i>
+                </button>
+                <span class="cipher-status-lbl" id="cipherModeLbl">Decrypted Plaintext</span>
+              </div>
+              <form id="chatForm" class="chat-form">
+                <input type="text" id="chatInput" placeholder="Send encrypted mesh message..." autocomplete="off" required>
+                <button type="submit" class="btn-send" id="btnSendChat">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Network Metrics Inspector Panel -->
+          <div class="tab-content" id="tab-metrics">
+            <div class="metrics-summary-cards">
+              <div class="metric-card">
+                <span class="m-label">Avg Mesh RTT</span>
+                <span class="m-value" id="valAvgRtt">14 ms</span>
+                <span class="m-trend good"><i class="fa-solid fa-arrow-down"></i> Optimal</span>
+              </div>
+              <div class="metric-card">
+                <span class="m-label">Packet Loss</span>
+                <span class="m-value" id="valPacketLoss">0.02%</span>
+                <span class="m-trend good"><i class="fa-solid fa-check"></i> Low</span>
+              </div>
+              <div class="metric-card">
+                <span class="m-label">Total Bitrate</span>
+                <span class="m-value" id="valTotalBitrate">6.8 Mbps</span>
+                <span class="m-trend neutral"><i class="fa-solid fa-gauge-high"></i> Mesh</span>
+              </div>
+            </div>
+
+            <div class="metrics-section-title">
+              <h3>Per-Peer RTCPeerConnection Stats</h3>
+              <button class="btn-icon-xs" id="btnRefreshMetrics" title="Refresh Stats"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+
+            <div class="peers-stats-list" id="peersStatsList">
+              <!-- JS populates cards here -->
+            </div>
+          </div>
+
+          <!-- Mesh Topology Visualizer -->
+          <div class="tab-content" id="tab-topology">
+            <div class="topology-container">
+              <div class="topology-info-bar">
+                <span class="top-title">Mesh Interconnect Graph</span>
+                <span class="top-badge" id="topologyType">Full Mesh (N × N-1)</span>
+              </div>
+              <div class="canvas-wrapper">
+                <canvas id="topologyCanvas"></canvas>
+              </div>
+              <div class="topology-legend">
+                <div class="legend-item"><span class="node-dot local"></span> Local Node</div>
+                <div class="legend-item"><span class="node-dot peer"></span> P2P Peer Node</div>
+                <div class="legend-item"><span class="node-dot bot"></span> Simulated Node</div>
+                <div class="legend-item"><span class="link-line active"></span> Active RTC Data / Stream</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Peer Simulation Sandbox -->
+          <div class="tab-content" id="tab-simulation">
+            <div class="sim-controls-panel">
+              <h3>Mesh Network Simulator Controls</h3>
+              <p class="sim-desc">Spawn simulated synthetic WebRTC peers with custom network conditions to test video grid scalability up to 9 nodes.</p>
+
+              <div class="sim-quick-actions">
+                <button class="btn-secondary-sm" id="btnAddOneBot"><i class="fa-solid fa-plus"></i> Add 1 Peer</button>
+                <button class="btn-secondary-sm" id="btnAddThreeBots"><i class="fa-solid fa-users"></i> Add 3 Mesh Peers</button>
+                <button class="btn-danger-sm" id="btnClearBots"><i class="fa-solid fa-trash"></i> Remove All Bots</button>
+              </div>
+
+              <hr class="sim-divider">
+
+              <div class="sim-settings-form">
+                <div class="form-group">
+                  <label for="simLatencySlider">Simulated Latency (RTT): <span id="simLatencyVal">25 ms</span></label>
+                  <input type="range" id="simLatencySlider" min="5" max="300" value="25">
+                </div>
+
+                <div class="form-group">
+                  <label for="simLossSlider">Simulated Packet Loss: <span id="simLossVal">0.5%</span></label>
+                  <input type="range" id="simLossSlider" min="0" max="15" step="0.5" value="0.5">
+                </div>
+
+                <div class="form-group">
+                  <label for="simResolutionSelect">Peer Video Resolution Generator</label>
+                  <select id="simResolutionSelect" class="sim-select">
+                    <option value="720p">720p HD (1280x720)</option>
+                    <option value="480p" selected>480p SD (854x480)</option>
+                    <option value="360p">360p Low (640x360)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="chkSimAudioWave" checked>
+                    <span>Simulate Peer Dynamic Audio Waveforms</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="chkSimNetworkJitter" checked>
+                    <span>Simulate Random Network Jitter & Bitrate Fluctuations</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+    </main>
+
+    <!-- Bottom Controls Floating Toolbar -->
+    <footer class="toolbar-footer">
+      <div class="toolbar-container">
+        <!-- Mic Controls with Gain Popover -->
+        <div class="control-btn-group">
+          <button class="control-btn" id="btnToggleMic" title="Toggle Microphone (M)">
+            <i class="fa-solid fa-microphone"></i>
+            <span class="btn-label">Mute</span>
+          </button>
+          <button class="control-btn-sub" id="btnMicOptions" title="Microphone & Gain Settings">
+            <i class="fa-solid fa-chevron-up"></i>
+          </button>
+
+          <!-- Mic Gain Popover Menu -->
+          <div class="popover-menu hidden" id="micPopover">
+            <div class="popover-header">Microphone Gain Control</div>
+            <div class="gain-slider-wrapper">
+              <i class="fa-solid fa-volume-low"></i>
+              <input type="range" id="audioGainSlider" min="0" max="3" step="0.1" value="1.0">
+              <i class="fa-solid fa-volume-high"></i>
+            </div>
+            <div class="gain-value-display">Gain: <span id="gainValText">1.0x (0dB)</span></div>
+          </div>
+        </div>
+
+        <!-- Camera Controls & Filters -->
+        <div class="control-btn-group">
+          <button class="control-btn" id="btnToggleCam" title="Toggle Camera (V)">
+            <i class="fa-solid fa-video"></i>
+            <span class="btn-label">Stop Video</span>
+          </button>
+          <button class="control-btn-sub" id="btnCamOptions" title="Camera Filters & Effects">
+            <i class="fa-solid fa-chevron-up"></i>
+          </button>
+
+          <!-- Camera Options Popover Menu -->
+          <div class="popover-menu hidden" id="camPopover">
+            <div class="popover-header">Camera Filters</div>
+            <button class="filter-option active" data-filter="none">Normal</button>
+            <button class="filter-option" data-filter="cyber">Cyberpunk Teal/Pink</button>
+            <button class="filter-option" data-filter="sepia">Vintage Sepia</button>
+            <button class="filter-option" data-filter="blur">Background Soft Blur</button>
+            <button class="filter-option" data-filter="mirror">Flip / Mirror Toggle</button>
+          </div>
+        </div>
+
+        <!-- Screen Share Control -->
+        <button class="control-btn" id="btnScreenShare" title="Share Screen (S)">
+          <i class="fa-solid fa-desktop"></i>
+          <span class="btn-label">Share Screen</span>
+        </button>
+
+        <!-- Peer Inspector Stats HUD Toggle -->
+        <button class="control-btn" id="btnToggleTileHud" title="Toggle Video Tile Stats Overlay">
+          <i class="fa-solid fa-gauge-simple-high"></i>
+          <span class="btn-label">Stats HUD</span>
+        </button>
+
+        <!-- Drawer Toggle Buttons -->
+        <button class="control-btn" id="btnToggleChat" title="Open E2EE Chat">
+          <i class="fa-solid fa-comment-dots"></i>
+          <span class="btn-label">Chat</span>
+          <span class="dot-badge hidden" id="chatDotBadge"></span>
+        </button>
+
+        <button class="control-btn" id="btnToggleMetrics" title="Open Network Metrics Inspector">
+          <i class="fa-solid fa-chart-line"></i>
+          <span class="btn-label">Metrics</span>
+        </button>
+
+        <button class="control-btn" id="btnToggleTopology" title="Open Mesh Topology Visualization">
+          <i class="fa-solid fa-network-wired"></i>
+          <span class="btn-label">Topology</span>
+        </button>
+
+        <!-- Leave / End Call Button -->
+        <button class="control-btn btn-leave" id="btnLeaveCall" title="Leave Call">
+          <i class="fa-solid fa-phone-slash"></i>
+          <span class="btn-label">Leave</span>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal: Room Invitation Link -->
+  <div class="modal-overlay hidden" id="inviteModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-plus"></i> Invite Peers to Mesh Conference</h3>
+        <button class="btn-icon" id="btnCloseInviteModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p>Share this link or open it in another browser tab to create a real P2P WebRTC Mesh connection!</p>
+        
+        <div class="invite-link-box">
+          <input type="text" id="inviteLinkInput" readonly value="http://localhost:3000/#room=mesh-sec-884">
+          <button class="btn-primary" id="btnCopyInviteLink">
+            <i class="fa-solid fa-copy"></i>
+            <span>Copy Link</span>
+          </button>
+        </div>
+
+        <div class="multi-tab-tip">
+          <i class="fa-solid fa-lightbulb"></i>
+          <div>
+            <strong>Quick Testing Tip:</strong> Open the copied URL in a 2nd browser tab or Incognito window. The tabs will automatically establish a WebRTC PeerConnection via local BroadcastChannel signaling!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JS Script File -->
+  <script src="mesh-conference.js"></script>
+</body>
+</html>
