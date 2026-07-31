@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AST Code Minifier & Obfuscator Studio</title>
+  <meta name="description" content="Browser-based Abstract Syntax Tree (AST) JavaScript code minifier, obfuscator, inspector, and size optimization studio.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Optional Acorn CDN for fallback parser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.11.3/acorn.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>AST Minifier &amp; Obfuscator Studio</h1>
+          <span class="badge">v2.5 AST Engine</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="header-actions">
+        <div class="preset-selector-wrapper">
+          <label for="samplePresetSelect" class="sr-only">Code Presets</label>
+          <select id="samplePresetSelect" class="select-input" aria-label="Select JS Code Sample">
+            <option value="" disabled selected>⚡ Load JS Sample...</option>
+            <option value="algorithm">1. QuickSort &amp; Binary Search (Algorithms)</option>
+            <option value="ui_handler">2. UI Modal &amp; Notification Handler (DOM/Async)</option>
+            <option value="utility">3. Utility Toolkit (Debounce, Clone, Math)</option>
+            <option value="complex_app">4. State Store &amp; Event Emitter (ES6 Class)</option>
+          </select>
+        </div>
+
+        <button id="btnProcessCode" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span>Run AST Pipeline</span>
+        </button>
+
+        <button id="btnReset" class="btn btn-ghost" title="Reset Code to Default">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Toolbar / Secondary Header -->
+    <div class="toolbar-strip">
+      <div class="view-switcher">
+        <span class="toolbar-label">Layout:</span>
+        <button class="view-btn active" data-view="split" id="viewSplitBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+          Side-by-Side
+        </button>
+        <button class="view-btn" data-view="ast" id="viewAstBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v8m0 0l4 4m-4-4l-4 4m0 4v4m8-4v4"/></svg>
+          AST Focus
+        </button>
+        <button class="view-btn" data-view="output" id="viewOutputBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Minified Output
+        </button>
+      </div>
+
+      <div class="toolbar-options">
+        <label class="toggle-switch" title="Automatically re-run AST minification on keystroke">
+          <input type="checkbox" id="autoProcessToggle" checked>
+          <span class="slider"></span>
+          <span class="toggle-label">Real-time AST Compile</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Main Studio Workspace Grid -->
+    <main class="studio-workspace grid-split" id="studioWorkspace">
+
+      <!-- Panel 1: Source Editor -->
+      <section class="panel editor-panel" id="sourcePanel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-dot dot-yellow"></span>
+            <h2>Source JavaScript Code</h2>
+          </div>
+          <div class="panel-meta">
+            <span id="sourceCharCount" class="meta-badge">0 chars</span>
+            <span id="sourceSizeBadge" class="meta-badge badge-info">0 B</span>
+          </div>
+        </div>
+
+        <div class="editor-container">
+          <div class="line-numbers" id="sourceLineNumbers">1</div>
+          <textarea id="sourceCodeInput" spellcheck="false" autocomplete="off" placeholder="// Type or paste JavaScript code here..."></textarea>
+        </div>
+      </section>
+
+      <!-- Panel 2: Interactive AST Visualizer & Inspector -->
+      <section class="panel ast-panel" id="astPanel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-dot dot-purple"></span>
+            <h2>AST Tree Visualizer</h2>
+          </div>
+          <div class="ast-controls">
+            <input type="text" id="astSearchInput" class="search-input" placeholder="Filter nodes (e.g. Identifier)...">
+            <button id="btnExpandAst" class="btn-xs" title="Expand All AST Nodes">Expand</button>
+            <button id="btnCollapseAst" class="btn-xs" title="Collapse AST Nodes">Collapse</button>
+          </div>
+        </div>
+
+        <!-- AST Tabs -->
+        <div class="ast-tabs">
+          <button class="ast-tab active" data-tab="tree">Tree View (<span id="astNodeCount">0</span> nodes)</button>
+          <button class="ast-tab" data-tab="json">AST JSON Schema</button>
+          <button class="ast-tab" data-tab="inspector">Node Inspector</button>
+        </div>
+
+        <div class="ast-content-wrapper">
+          <!-- AST Tree Container -->
+          <div id="astTreeContainer" class="ast-tab-content active">
+            <div class="ast-placeholder">AST structure will render here in real-time...</div>
+          </div>
+
+          <!-- AST JSON Container -->
+          <div id="astJsonContainer" class="ast-tab-content">
+            <pre class="json-code" id="astJsonOutput">{}</pre>
+          </div>
+
+          <!-- AST Node Inspector Container -->
+          <div id="astInspectorContainer" class="ast-tab-content">
+            <div class="inspector-card" id="inspectorCard">
+              <p class="inspector-hint">Click any AST node in the tree view to inspect its raw properties, scope depth, and source code mapping.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 3: Minified & Obfuscated Output -->
+      <section class="panel output-panel" id="outputPanel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-dot dot-green"></span>
+            <h2>Minified &amp; Obfuscated Output</h2>
+          </div>
+          <div class="panel-meta">
+            <span id="outputCharCount" class="meta-badge">0 chars</span>
+            <span id="outputSizeBadge" class="meta-badge badge-success">0 B</span>
+            <span id="savingsBadge" class="meta-badge badge-highlight">0% saved</span>
+          </div>
+        </div>
+
+        <div class="editor-container">
+          <div class="line-numbers" id="outputLineNumbers">1</div>
+          <textarea id="outputCodeViewer" readonly spellcheck="false" placeholder="// Minified code will appear here..."></textarea>
+        </div>
+
+        <!-- Action bar for export -->
+        <div class="panel-footer">
+          <button id="btnCopyOutput" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy Code</span>
+          </button>
+
+          <button id="btnDownloadMin" class="btn btn-success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download .min.js</span>
+          </button>
+
+          <button id="btnDownloadAst" class="btn btn-ghost">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <span>Export AST JSON</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Controls & Analytics Bar -->
+    <footer class="bottom-section">
+      <!-- Obfuscation & Minifier Settings Accordion / Panel -->
+      <div class="settings-card">
+        <div class="settings-header">
+          <div class="settings-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <h3>AST Transformation &amp; Obfuscation Controls</h3>
+          </div>
+          <span class="settings-hint">Configure syntax tree mutations, variable mangling algorithms, and string encoding</span>
+        </div>
+
+        <div class="settings-grid">
+          <!-- Minification group -->
+          <div class="settings-group">
+            <h4>Syntax Minification</h4>
+            <div class="checkbox-list">
+              <label class="checkbox-item">
+                <input type="checkbox" id="optStripWhitespace" checked>
+                <span>Strip Whitespace &amp; Newlines</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" id="optStripComments" checked>
+                <span>Strip Comments &amp; Docstrings</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" id="optRemoveConsole" checked>
+                <span>Remove <code>console.log()</code> Statements</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" id="optConstantFolding" checked>
+                <span>AST Constant Folding (e.g. <code>2+3</code> &rarr; <code>5</code>)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Obfuscation group -->
+          <div class="settings-group">
+            <h4>Identifier Mangling &amp; Scope</h4>
+            <div class="form-field">
+              <label for="optMangleVariables">Variable &amp; Parameter Mangling:</label>
+              <select id="optMangleVariables" class="select-input-sm">
+                <option value="alpha" selected>Short Names (a, b, c, d...)</option>
+                <option value="hex">Hexadecimal Prefix (_0x1a2b, _0x3f4e)</option>
+                <option value="emoji">Emoji Identifiers (_⚡, _🔥, _🚀)</option>
+                <option value="none">Disabled (Keep Original Names)</option>
+              </select>
+            </div>
+
+            <div class="checkbox-list">
+              <label class="checkbox-item">
+                <input type="checkbox" id="optMangleFunctions" checked>
+                <span>Mangle Function Declarations</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" id="optPreserveGlobals" checked>
+                <span>Preserve Global APIs (window, document, Math)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- String & Number Encoding -->
+          <div class="settings-group">
+            <h4>Literal Obfuscation &amp; Dead Code</h4>
+            <div class="form-field">
+              <label for="optStringEncoding">String Literal Obfuscation:</label>
+              <select id="optStringEncoding" class="select-input-sm">
+                <option value="none">None (Plain Text Strings)</option>
+                <option value="hex" selected>Hex Escape Sequences (\x48\x65\x6c...)</option>
+                <option value="array">String Table &amp; Decoder Array (_0xStrTable[i])</option>
+              </select>
+            </div>
+
+            <div class="checkbox-list">
+              <label class="checkbox-item">
+                <input type="checkbox" id="optDeadCode" checked>
+                <span>Eliminate Dead Code / Unreachable Statements</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" id="optHexNumbers">
+                <span>Encode Integers to Hexadecimal (e.g. 255 &rarr; 0xff)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compression Metrics Dashboard Card -->
+      <div class="metrics-card">
+        <div class="metrics-header">
+          <h3>Size Reduction Metrics</h3>
+          <span class="parse-speed" id="parseTimeBadge">Parse Time: 0ms</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <span class="metric-label">Original Size</span>
+            <span class="metric-value" id="valOrigSize">0 B</span>
+          </div>
+
+          <div class="metric-item">
+            <span class="metric-label">Minified Size</span>
+            <span class="metric-value highlight-green" id="valMinSize">0 B</span>
+          </div>
+
+          <div class="metric-item">
+            <span class="metric-label">Bytes Saved</span>
+            <span class="metric-value highlight-purple" id="valSavedBytes">0 B</span>
+          </div>
+
+          <div class="metric-item">
+            <span class="metric-label">Space Savings</span>
+            <span class="metric-value highlight-indigo" id="valSavingsPct">0%</span>
+          </div>
+
+          <div class="metric-item">
+            <span class="metric-label">Compression Ratio</span>
+            <span class="metric-value" id="valRatio">1.00 : 1</span>
+          </div>
+
+          <div class="metric-item">
+            <span class="metric-label">Est. Gzip Size</span>
+            <span class="metric-value" id="valGzip">0 B</span>
+          </div>
+        </div>
+
+        <!-- Compression Visual Meter Bar -->
+        <div class="meter-wrapper">
+          <div class="meter-labels">
+            <span>Minified Output (<span id="meterMinPct">0%</span>)</span>
+            <span>Reduced Space (<span id="meterSavingsPct">0%</span>)</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill" id="meterFill" style="width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Notification Toast Container -->
+    <div id="toast" class="toast hidden">
+      <span id="toastMessage">Notification message</span>
+    </div>
+  </div>
+
+  <script src="minifier-studio.js"></script>
+</body>
+</html>
