@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Container Queries & Style Debugger Studio</title>
+  <meta name="description" content="Interactive CSS Houdini & Container Query Playground, Live Inspector, and Unit Comparison Calculator">
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <i class="fa-solid fa-cubes-stacked"></i>
+        </div>
+        <div class="brand-title">
+          <h1>ContainerIQ</h1>
+          <span class="badge badge-tech">CSS Houdini & CQ Studio</span>
+        </div>
+      </div>
+
+      <div class="browser-support-bar">
+        <div class="support-item" id="cqSupportBadge">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Checking CQ Support...
+        </div>
+        <div class="support-item" id="houdiniSupportBadge">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Checking Houdini...
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="copyCssBtn" class="btn btn-secondary" title="Copy Current Generated CSS">
+          <i class="fa-regular fa-copy"></i> Copy CSS
+        </button>
+        <button id="resetPlaygroundBtn" class="btn btn-ghost" title="Reset to Defaults">
+          <i class="fa-solid fa-rotate-left"></i> Reset
+        </button>
+        <button id="themeToggleBtn" class="btn btn-icon" title="Toggle Light/Dark Theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="app-main">
+      <!-- Left Panel: Sidebar Controls & Tabs -->
+      <aside class="sidebar-panel">
+        <nav class="tab-nav">
+          <button class="tab-btn active" data-tab="templatesTab">
+            <i class="fa-solid fa-layer-group"></i> Templates
+          </button>
+          <button class="tab-btn" data-tab="editorTab">
+            <i class="fa-solid fa-code"></i> Live CSS
+          </button>
+          <button class="tab-btn" data-tab="calculatorTab">
+            <i class="fa-solid fa-calculator"></i> Unit Calc
+          </button>
+          <button class="tab-btn" data-tab="houdiniTab">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Style Query
+          </button>
+        </nav>
+
+        <div class="tab-content-container">
+          <!-- TAB 1: Templates Selector -->
+          <div class="tab-pane active" id="templatesTab">
+            <div class="pane-section">
+              <h3 class="section-title"><i class="fa-solid fa-shapes"></i> Component Presets</h3>
+              <p class="section-desc">Test container queries on pre-configured responsive components:</p>
+              
+              <div class="template-grid">
+                <button class="template-card active" data-template="productCard">
+                  <div class="template-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                  <div class="template-info">
+                    <h4>E-commerce Card</h4>
+                    <p>Adapts from vertical to horizontal to multi-column</p>
+                  </div>
+                </button>
+
+                <button class="template-card" data-template="profileCard">
+                  <div class="template-icon"><i class="fa-solid fa-id-card"></i></div>
+                  <div class="template-info">
+                    <h4>User Profile Widget</h4>
+                    <p>Mini badge → Full bio & stat grid</p>
+                  </div>
+                </button>
+
+                <button class="template-card" data-template="newsFeed">
+                  <div class="template-icon"><i class="fa-solid fa-newspaper"></i></div>
+                  <div class="template-info">
+                    <h4>News Feed Card</h4>
+                    <p>Compact headline → Hero layout with metadata</p>
+                  </div>
+                </button>
+
+                <button class="template-card" data-template="customSandbox">
+                  <div class="template-icon"><i class="fa-solid fa-code"></i></div>
+                  <div class="template-info">
+                    <h4>Custom HTML Sandbox</h4>
+                    <p>Write raw HTML & attach container queries</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="pane-section">
+              <h3 class="section-title"><i class="fa-solid fa-sliders"></i> Container Configuration</h3>
+              <div class="control-group">
+                <label for="containerTypeSelect">Container Type (<code>container-type</code>)</label>
+                <select id="containerTypeSelect" class="form-select">
+                  <option value="inline-size">inline-size (Width matching - Recommended)</option>
+                  <option value="size">size (Width & Height matching)</option>
+                  <option value="normal">normal (Style queries only)</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="containerNameInput">Container Name (<code>container-name</code>)</label>
+                <input type="text" id="containerNameInput" class="form-input" value="card-container" placeholder="e.g. card-container">
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: Live CSS Editor -->
+          <div class="tab-pane" id="editorTab">
+            <div class="pane-section editor-header-section">
+              <div class="editor-title-bar">
+                <h3 class="section-title"><i class="fa-solid fa-terminal"></i> Container Query CSS</h3>
+                <span class="status-indicator live" id="cssStatusIndicator">Live Sync</span>
+              </div>
+              
+              <div class="quick-snippets">
+                <span class="snippet-label">Insert Snippet:</span>
+                <button class="snippet-btn" data-snippet="width-400">min-width: 400px</button>
+                <button class="snippet-btn" data-snippet="width-600">min-width: 600px</button>
+                <button class="snippet-btn" data-snippet="cqw-units">cqw units</button>
+                <button class="snippet-btn" data-snippet="style-query">style(--theme)</button>
+              </div>
+            </div>
+
+            <div class="code-editor-wrapper">
+              <div class="line-numbers" id="lineNumbers">1</div>
+              <textarea id="liveCssEditor" class="code-editor-textarea" spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <!-- TAB 3: Container Unit Calculator -->
+          <div class="tab-pane" id="calculatorTab">
+            <div class="pane-section">
+              <h3 class="section-title"><i class="fa-solid fa-scale-unbalanced"></i> Unit Comparison Calculator</h3>
+              <p class="section-desc">Compare Container Relative Units against Viewport Units in real time based on active dimensions.</p>
+              
+              <div class="calc-input-row">
+                <div class="calc-input-field">
+                  <label for="unitValueInput">Value</label>
+                  <input type="number" id="unitValueInput" value="50" min="1" max="100" class="form-input">
+                </div>
+                <div class="calc-input-field">
+                  <label for="unitTypeSelect">Unit Basis</label>
+                  <select id="unitTypeSelect" class="form-select">
+                    <option value="width">Width (cqw vs vw / cqi vs vi)</option>
+                    <option value="height">Height (cqh vs vh / cqb vs vb)</option>
+                    <option value="minmax">Min/Max (cqmin vs vmin / cqmax vs vmax)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="unit-bars-container" id="unitBarsContainer">
+                <!-- Dynamically Populated Unit Bars -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: CSS Houdini & Style Query Inspector -->
+          <div class="tab-pane" id="houdiniTab">
+            <div class="pane-section">
+              <h3 class="section-title"><i class="fa-solid fa-palette"></i> Style Queries & Houdini</h3>
+              <p class="section-desc">Test CSS Style Queries (<code>@container style(--variable: value)</code>) and Custom Registered Properties.</p>
+              
+              <div class="control-group">
+                <label>Parent Custom Theme Property (<code>--card-theme</code>)</label>
+                <div class="color-picker-row">
+                  <button class="theme-preset-chip active" data-color="purple" style="--chip-color: #8b5cf6;">Purple</button>
+                  <button class="theme-preset-chip" data-color="emerald" style="--chip-color: #10b981;">Emerald</button>
+                  <button class="theme-preset-chip" data-color="amber" style="--chip-color: #f59e0b;">Amber</button>
+                  <button class="theme-preset-chip" data-color="rose" style="--chip-color: #f43f5e;">Rose</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label for="cardDensitySelect">Card Layout Mode (<code>--card-mode</code>)</label>
+                <select id="cardDensitySelect" class="form-select">
+                  <option value="compact">compact</option>
+                  <option value="standard" selected>standard</option>
+                  <option value="expanded">expanded</option>
+                </select>
+              </div>
+
+              <div class="houdini-register-box">
+                <div class="box-header">
+                  <span>Houdini Registered Property Status</span>
+                  <span class="badge badge-success" id="houdiniStatusBadge">Active</span>
+                </div>
+                <pre class="code-block"><code>@property --card-accent {
+  syntax: '&lt;color&gt;';
+  inherits: true;
+  initial-value: #6366f1;
+}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Panel: Resizable Container Viewport Stage -->
+      <section class="workbench-stage">
+        <!-- Stage Control Bar -->
+        <div class="stage-toolbar">
+          <div class="preset-pills">
+            <span class="toolbar-label"><i class="fa-solid fa-expand"></i> Presets:</span>
+            <button class="btn btn-pill" data-width="320">320px</button>
+            <button class="btn btn-pill" data-width="480">480px</button>
+            <button class="btn btn-pill active" data-width="640">640px</button>
+            <button class="btn btn-pill" data-width="840">840px</button>
+            <button class="btn btn-pill" data-width="1024">1024px</button>
+          </div>
+
+          <div class="dimension-inputs">
+            <div class="input-with-unit">
+              <label>W:</label>
+              <input type="number" id="widthNumInput" value="640" min="200" max="1400">
+              <span>px</span>
+            </div>
+            <span class="x-divider">×</span>
+            <div class="input-with-unit">
+              <label>H:</label>
+              <input type="number" id="heightNumInput" value="480" min="200" max="1000">
+              <span>px</span>
+            </div>
+          </div>
+
+          <div class="stage-toggles">
+            <button id="toggleRulerBtn" class="btn btn-icon active" title="Toggle Breakpoint Visual Ruler">
+              <i class="fa-solid fa-ruler-horizontal"></i>
+            </button>
+            <button id="toggleGridBtn" class="btn btn-icon" title="Toggle Background Alignment Grid">
+              <i class="fa-solid fa-border-all"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Stage Container Canvas -->
+        <div class="stage-canvas-wrapper" id="stageCanvas">
+          <!-- Visual Ruler Bar -->
+          <div class="ruler-bar" id="rulerBar">
+            <div class="ruler-ticks" id="rulerTicks"></div>
+            <div class="ruler-breakpoints-markers" id="rulerMarkers">
+              <!-- Dynamically populated breakpoint flags -->
+            </div>
+          </div>
+
+          <!-- Live Resizable Container Element -->
+          <div class="resizable-container" id="resizableContainer" style="width: 640px; height: 480px;">
+            <!-- Dimension Overlay Badge -->
+            <div class="container-badge" id="containerDimensionBadge">
+              <i class="fa-solid fa-arrows-left-right"></i>
+              <span id="dimWidthPx">640px</span> × <span id="dimHeightPx">480px</span>
+              <span class="aspect-tag" id="aspectRatioTag">4:3</span>
+            </div>
+
+            <!-- Active Breakpoint Toast Notification -->
+            <div class="breakpoint-toast" id="breakpointToast">
+              <i class="fa-solid fa-bolt"></i> Active Query: <strong id="activeBreakpointText">@container (min-width: 600px)</strong>
+            </div>
+
+            <!-- Resizable Inner Workspace (Where Templates Render) -->
+            <div class="container-content-target card-container" id="containerTarget" style="container-type: inline-size; container-name: card-container;">
+              <!-- Dynamic Template Content HTML Inserted Here -->
+            </div>
+
+            <!-- Draggable Handles -->
+            <div class="resize-handle handle-e" data-handle="e" title="Drag to Resize Width"></div>
+            <div class="resize-handle handle-s" data-handle="s" title="Drag to Resize Height"></div>
+            <div class="resize-handle handle-se" data-handle="se" title="Drag to Resize Both"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Inspector Drawer -->
+      <aside class="inspector-drawer">
+        <div class="drawer-header">
+          <h3><i class="fa-solid fa-microscope"></i> Inspector</h3>
+          <span class="badge badge-info" id="parsedRulesCount">0 rules</span>
+        </div>
+
+        <div class="drawer-content">
+          <!-- Computed Metrics Card -->
+          <div class="inspector-card">
+            <div class="card-header"><i class="fa-solid fa-chart-simple"></i> Computed CQ Units</div>
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <span class="metric-label">100cqw</span>
+                <span class="metric-value" id="val100cqw">640.0px</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">1cqw</span>
+                <span class="metric-value" id="val1cqw">6.4px</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">100cqh</span>
+                <span class="metric-value" id="val100cqh">480.0px</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">1cqh</span>
+                <span class="metric-value" id="val1cqh">4.8px</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">1cqmin</span>
+                <span class="metric-value" id="val1cqmin">4.8px</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">1cqmax</span>
+                <span class="metric-value" id="val1cqmax">6.4px</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evaluated Queries Tree -->
+          <div class="inspector-card">
+            <div class="card-header"><i class="fa-solid fa-list-check"></i> Active Query Rules</div>
+            <div class="query-rules-list" id="queryRulesList">
+              <!-- Dynamically populated query rules status cards -->
+            </div>
+          </div>
+
+          <!-- Computed Style Properties -->
+          <div class="inspector-card">
+            <div class="card-header"><i class="fa-solid fa-sliders"></i> Child Computed Styles</div>
+            <div class="styles-table" id="childComputedStylesTable">
+              <div class="style-row">
+                <span class="prop-name">font-size</span>
+                <span class="prop-val" id="csFontSize">16px</span>
+              </div>
+              <div class="style-row">
+                <span class="prop-name">display</span>
+                <span class="prop-val" id="csDisplay">flex</span>
+              </div>
+              <div class="style-row">
+                <span class="prop-name">flex-direction</span>
+                <span class="prop-val" id="csFlexDir">row</span>
+              </div>
+              <div class="style-row">
+                <span class="prop-name">grid-template-columns</span>
+                <span class="prop-val" id="csGridCols">none</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Custom CSS Style Injector Tag -->
+    <style id="dynamicCqStyles"></style>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="container-debugger.js"></script>
+</body>
+</html>
