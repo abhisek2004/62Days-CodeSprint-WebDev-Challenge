@@ -4,7 +4,7 @@ A simple calculator built using **HTML**, **CSS**, and **JavaScript**. It perfor
 
 ## Live Demo
 
-🔗 **Live Website:** [https://your-live-link.com](https://mitali-kumari905.github.io/calculator/)
+🔗 **Live Website:** [https://mitali-kumari905.github.io/calculator/]
 
 ## Features
 
