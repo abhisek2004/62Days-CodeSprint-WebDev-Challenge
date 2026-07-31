@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web Audio Sound Effects Synthesizer & Spatial 3D Panner Studio - Professional web-based DAW audio tool for procedural SFX design, HRTF 3D spatial panning, real-time audio visualization, and WAV audio export.">
+    <title>SonicCraft Studio | Web Audio SFX Synthesizer & 3D Spatial Panner</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="daw-container">
+        <!-- Top DAW Navigation Header -->
+        <header class="daw-header">
+            <div class="brand-section">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-compact-disc fa-spin-hover"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>SONICCRAFT <span class="badge">DAW 3D</span></h1>
+                    <p class="subtitle">Procedural SFX Synth & HRTF Spatial Audio Studio</p>
+                </div>
+            </div>
+
+            <!-- Global DAW Controls -->
+            <div class="global-controls">
+                <div class="status-indicator" id="audio-status" title="Audio Engine Status">
+                    <span class="status-dot suspended"></span>
+                    <span class="status-text">Engine Off</span>
+                </div>
+
+                <button class="btn btn-primary" id="btn-power">
+                    <i class="fa-solid fa-power-off"></i> Start Engine
+                </button>
+
+                <div class="control-group header-volume">
+                    <label for="master-volume"><i class="fa-solid fa-volume-high"></i> Master</label>
+                    <input type="range" id="master-volume" min="0" max="1" step="0.01" value="0.8">
+                    <span class="value-display" id="master-vol-val">80%</span>
+                </div>
+
+                <button class="btn btn-icon" id="btn-mute" title="Mute Master Output">
+                    <i class="fa-solid fa-volume-xmark"></i>
+                </button>
+
+                <button class="btn btn-secondary" id="btn-shortcuts" title="Keyboard Shortcuts">
+                    <i class="fa-solid fa-keyboard"></i> Hotkeys
+                </button>
+
+                <button class="btn btn-secondary" id="btn-help" title="Studio Guide">
+                    <i class="fa-solid fa-circle-question"></i> Help
+                </button>
+            </div>
+        </header>
+
+        <!-- Main DAW Workspace -->
+        <main class="daw-workspace">
+            
+            <!-- Left Column: Synthesizer Parameters Engine -->
+            <section class="daw-panel synth-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-sliders"></i> SFX Synthesizer Engine</h2>
+                    <span class="panel-tag">Web Audio API</span>
+                </div>
+
+                <div class="panel-body custom-scroll">
+                    
+                    <!-- Waveform Selection -->
+                    <div class="control-card">
+                        <div class="card-title">
+                            <i class="fa-solid fa-wave-square"></i> Waveform Generator
+                        </div>
+                        <div class="waveform-selector" id="waveform-buttons">
+                            <button class="btn-wave active" data-wave="sine" title="Sine Wave">
+                                <i class="fa-solid fa-circle-notch"></i> Sine
+                            </button>
+                            <button class="btn-wave" data-wave="square" title="Square Wave">
+                                <i class="fa-solid fa-square-full"></i> Square
+                            </button>
+                            <button class="btn-wave" data-wave="sawtooth" title="Sawtooth Wave">
+                                <i class="fa-solid fa-play fa-rotate-270"></i> Saw
+                            </button>
+                            <button class="btn-wave" data-wave="triangle" title="Triangle Wave">
+                                <i class="fa-solid fa-caret-up"></i> Triangle
+                            </button>
+                            <button class="btn-wave" data-wave="noise" title="Procedural Noise Generator">
+                                <i class="fa-solid fa-soap"></i> Noise
+                            </button>
+                        </div>
+                        <div class="noise-type-container hidden" id="noise-options">
+                            <label for="noise-type">Noise Spectrum:</label>
+                            <select id="noise-type" class="select-input">
+                                <option value="white">White Noise (Crisp/Explosions)</option>
+                                <option value="pink">Pink Noise (Deep Wind/Impacts)</option>
+                                <option value="brown">Brown Noise (Thunder/Sub-bass)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Pitch & Frequency Sweeps -->
+                    <div class="control-card">
+                        <div class="card-title">
+                            <i class="fa-solid fa-arrows-up-down"></i> Frequency & Pitch Envelope
+                        </div>
+                        
+                        <div class="grid-2col">
+                            <div class="control-group">
+                                <label for="start-freq">Start Freq (Hz)</label>
+                                <input type="range" id="start-freq" min="20" max="4000" step="1" value="440">
+                                <div class="val-box"><span id="start-freq-val">440</span> Hz</div>
+                            </div>
+                            <div class="control-group">
+                                <label for="end-freq">End Freq (Hz)</label>
+                                <input type="range" id="end-freq" min="20" max="4000" step="1" value="110">
+                                <div class="val-box"><span id="end-freq-val">110</span> Hz</div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2col">
+                            <div class="control-group">
+                                <label for="sweep-time">Sweep Duration (s)</label>
+                                <input type="range" id="sweep-time" min="0.01" max="3" step="0.01" value="0.3">
+                                <div class="val-box"><span id="sweep-time-val">0.30</span> s</div>
+                            </div>
+                            <div class="control-group">
+                                <label for="sweep-curve">Sweep Curve</label>
+                                <select id="sweep-curve" class="select-input">
+                                    <option value="exponential">Exponential (Natural Pitch Drop)</option>
+                                    <option value="linear">Linear (Constant Slope)</option>
+                                    <option value="instant">Instant Pitch Jump</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Pitch Modulator (LFO) -->
+                        <div class="sub-section-title">Pitch FM Modulator (Vibrato/Siren)</div>
+                        <div class="grid-2col">
+                            <div class="control-group">
+                                <label for="fm-freq">FM Rate (Hz)</label>
+                                <input type="range" id="fm-freq" min="0" max="50" step="0.5" value="0">
+                                <div class="val-box"><span id="fm-freq-val">0.0</span> Hz</div>
+                            </div>
+                            <div class="control-group">
+                                <label for="fm-depth">FM Depth (Hz)</label>
+                                <input type="range" id="fm-depth" min="0" max="1000" step="10" value="0">
+                                <div class="val-box"><span id="fm-depth-val">0</span> Hz</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADSR Envelope Generator -->
+                    <div class="control-card">
+                        <div class="card-title">
+                            <i class="fa-solid fa-chart-line"></i> ADSR Amplitude Envelope
+                        </div>
+                        <div class="adsr-grid">
+                            <div class="adsr-col">
+                                <label for="adsr-a">A (Attack)</label>
+                                <div class="vertical-slider-wrap">
+                                    <input type="range" id="adsr-a" class="v-range" min="0" max="2" step="0.01" value="0.02">
+                                </div>
+                                <span class="val-box" id="adsr-a-val">0.02s</span>
+                            </div>
+                            <div class="adsr-col">
+                                <label for="adsr-d">D (Decay)</label>
+                                <div class="vertical-slider-wrap">
+                                    <input type="range" id="adsr-d" class="v-range" min="0.01" max="2" step="0.01" value="0.25">
+                                </div>
+                                <span class="val-box" id="adsr-d-val">0.25s</span>
+                            </div>
+                            <div class="adsr-col">
+                                <label for="adsr-s">S (Sustain)</label>
+                                <div class="vertical-slider-wrap">
+                                    <input type="range" id="adsr-s" class="v-range" min="0" max="1" step="0.01" value="0.20">
+                                </div>
+                                <span class="val-box" id="adsr-s-val">20%</span>
+                            </div>
+                            <div class="adsr-col">
+                                <label for="adsr-r">R (Release)</label>
+                                <div class="vertical-slider-wrap">
+                                    <input type="range" id="adsr-r" class="v-range" min="0.01" max="3" step="0.01" value="0.30">
+                                </div>
+                                <span class="val-box" id="adsr-r-val">0.30s</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter & FX Rack -->
+                    <div class="control-card">
+                        <div class="card-title">
+                            <i class="fa-solid fa-filter"></i> Resonant Filter & FX Rack
+                        </div>
+                        <div class="grid-2col">
+                            <div class="control-group">
+                                <label for="filter-type">Filter Mode</label>
+                                <select id="filter-type" class="select-input">
+                                    <option value="none">Off (Bypass)</option>
+                                    <option value="lowpass" selected>Lowpass (Smooth/Warm)</option>
+                                    <option value="highpass">Highpass (Bright/Thin)</option>
+                                    <option value="bandpass">Bandpass (Radio/Phone)</option>
+                                    <option value="notch">Notch (Frequency Cut)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="filter-cutoff">Cutoff Freq (Hz)</label>
+                                <input type="range" id="filter-cutoff" min="50" max="15000" step="50" value="3500">
+                                <div class="val-box"><span id="filter-cutoff-val">3500</span> Hz</div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2col">
+                            <div class="control-group">
+                                <label for="filter-res">Resonance (Q)</label>
+                                <input type="range" id="filter-res" min="0.1" max="20" step="0.1" value="1.0">
+                                <div class="val-box"><span id="filter-res-val">1.0</span></div>
+                            </div>
+                            <div class="control-group">
+                                <label for="fx-distortion">Distortion / Drive</label>
+                                <input type="range" id="fx-distortion" min="0" max="100" step="1" value="0">
+                                <div class="val-box"><span id="fx-distortion-val">0</span>%</div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2col">
+                            <div class="control-group">
+                                <label for="fx-reverb">Spatial Reverb Wet</label>
+                                <input type="range" id="fx-reverb" min="0" max="1" step="0.02" value="0.15">
+                                <div class="val-box"><span id="fx-reverb-val">15</span>%</div>
+                            </div>
+                            <div class="control-group">
+                                <label for="fx-delay">Echo Delay Feedback</label>
+                                <input type="range" id="fx-delay" min="0" max="0.8" step="0.02" value="0">
+                                <div class="val-box"><span id="fx-delay-val">0</span>%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trigger Main Action Button -->
+                    <div class="trigger-action-wrap">
+                        <button class="btn btn-hero" id="btn-trigger-sound">
+                            <i class="fa-solid fa-play"></i> TRIGGER SYNTHESIZED SOUND
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Center Column: 3D Spatial Audio Panner & Visualizer -->
+            <section class="daw-panel spatial-visualizer-panel">
+                
+                <!-- 3D Panner Section -->
+                <div class="panner-section">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-vr-cardboard"></i> Interactive 3D Spatial Audio Panner</h2>
+                        <div class="toggle-switch-wrap">
+                            <label for="panner-hrtf-toggle">HRTF 3D Panning</label>
+                            <input type="checkbox" id="panner-hrtf-toggle" checked>
+                        </div>
+                    </div>
+
+                    <div class="panner-viewport">
+                        <canvas id="panner-canvas" width="600" height="380"></canvas>
+                        
+                        <div class="panner-overlay-info">
+                            <div class="pos-badge source-badge">
+                                <i class="fa-solid fa-bullseye"></i> Source: 
+                                X: <span id="pos-x-val">2.5</span>m, 
+                                Y: <span id="pos-y-val">1.2</span>m, 
+                                Z: <span id="pos-z-val">0.0</span>m
+                            </div>
+                            <div class="pos-badge listener-badge">
+                                <i class="fa-solid fa-headphones"></i> Listener Center (0, 0, 0)
+                            </div>
+                        </div>
+
+                        <div class="panner-quick-tools">
+                            <button class="btn btn-sm btn-dark" id="btn-orbit" title="Toggle Auto Orbiting Sound Source">
+                                <i class="fa-solid fa-rotate"></i> Auto Orbit: OFF
+                            </button>
+                            <button class="btn btn-sm btn-dark" id="btn-center-source" title="Reset Source to Center">
+                                <i class="fa-solid fa-crosshairs"></i> Reset Position
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Spatial Panner Controls -->
+                    <div class="panner-controls-bar">
+                        <div class="control-group">
+                            <label for="panner-z">Z Height (Elevation)</label>
+                            <input type="range" id="panner-z" min="-10" max="10" step="0.1" value="0">
+                            <span class="val-box" id="panner-z-val">0.0 m</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="panner-distance-model">Distance Model</label>
+                            <select id="panner-distance-model" class="select-input">
+                                <option value="inverse" selected>Inverse (Natural Distance)</option>
+                                <option value="linear">Linear (Proportional)</option>
+                                <option value="exponential">Exponential (Rapid Drop)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="panner-rolloff">Rolloff Factor</label>
+                            <input type="range" id="panner-rolloff" min="0.1" max="10" step="0.1" value="1">
+                            <span class="val-box" id="panner-rolloff-val">1.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Audio Spectrum & Oscilloscope Visualizer -->
+                <div class="visualizer-section">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-chart-simple"></i> Real-time Audio Analyzer & Oscilloscope</h2>
+                        <div class="viz-mode-buttons">
+                            <button class="btn-viz active" data-mode="both" id="btn-viz-both">Dual View</button>
+                            <button class="btn-viz" data-mode="spectrum" id="btn-viz-spec">Spectrum FFT</button>
+                            <button class="btn-viz" data-mode="waveform" id="btn-viz-wave">Oscilloscope</button>
+                        </div>
+                    </div>
+
+                    <div class="visualizer-viewport">
+                        <canvas id="spectrum-canvas" width="600" height="200"></canvas>
+                        
+                        <!-- Peak Meters / VU meters -->
+                        <div class="vu-meters">
+                            <div class="meter-channel">
+                                <span class="channel-label">L</span>
+                                <div class="meter-bar-track">
+                                    <div class="meter-bar-fill" id="meter-left"></div>
+                                </div>
+                            </div>
+                            <div class="meter-channel">
+                                <span class="channel-label">R</span>
+                                <div class="meter-bar-track">
+                                    <div class="meter-bar-fill" id="meter-right"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Right Column: Sound Presets & Audio WAV Exporter -->
+            <section class="daw-panel sidebar-panel">
+                
+                <!-- Presets Library -->
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-list-check"></i> Sound Effects Presets</h2>
+                </div>
+
+                <div class="presets-container custom-scroll">
+                    <p class="section-desc">Click any preset to load synthesize parameters and hear live audio:</p>
+                    
+                    <div class="preset-grid" id="preset-buttons-grid">
+                        <button class="btn-preset" data-preset="laser">
+                            <i class="fa-solid fa-bolt"></i>
+                            <div class="preset-info">
+                                <span class="preset-name">Laser Shot</span>
+                                <span class="preset-type">Sci-Fi Blaster</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-preset" data-preset="explosion">
+                            <i class="fa-solid fa-bomb"></i>
+                            <div class="preset-info">
+                                <span class="preset-name">Heavy Explosion</span>
+                                <span class="preset-type">Low rumble noise</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-preset" data-preset="coin">
+                            <i class="fa-solid fa-coins"></i>
+                            <div class="preset-info">
+                                <span class="preset-name">Retro Coin</span>
+                                <span class="preset-type">8-Bit Arpeggio</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-preset" data-preset="jump">
+                            <i class="fa-solid fa-person-running"></i>
+                            <div class="preset-info">
+                                <span class="preset-name">Power-up Jump</span>
+                                <span class="preset-type">Rising synth pitch</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-preset" data-preset="alarm">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <div class="preset-info">
+                                <span class="preset-name">Cyber Alarm</span>
+                                <span class="preset-type">Siren FM sweep</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-preset" data-preset="teleport">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <div class="preset-info">
+                                <span class="preset-name">Teleport Warp</span>
+                                <span class="preset-type">High-speed sweep</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-preset" data-preset="spell">
+                            <i class="fa-solid fa-star"></i>
+                            <div class="preset-info">
+                                <span class="preset-name">Magic Spell</span>
+                                <span class="preset-type">Sparkling shimmer</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-preset" data-preset="hit">
+                            <i class="fa-solid fa-hand-fist"></i>
+                            <div class="preset-info">
+                                <span class="preset-name">Melee Impact</span>
+                                <span class="preset-type">Punchy low thud</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Custom Preset Actions -->
+                    <div class="preset-user-tools">
+                        <button class="btn btn-secondary btn-sm" id="btn-save-preset">
+                            <i class="fa-solid fa-bookmark"></i> Save Current Preset
+                        </button>
+                        <button class="btn btn-secondary btn-sm" id="btn-export-json">
+                            <i class="fa-solid fa-file-export"></i> Export JSON
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Audio WAV Exporter Engine -->
+                <div class="exporter-section">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-file-audio"></i> Offline Audio WAV Exporter</h2>
+                    </div>
+
+                    <div class="exporter-body">
+                        <p class="export-desc">Renders the current sound synthesis parameters offline using sample-accurate Web Audio PCM encoding into a studio WAV file.</p>
+                        
+                        <div class="render-spec-box">
+                            <div class="spec-item">
+                                <span class="spec-label">Format:</span>
+                                <span class="spec-val">16-bit PCM .WAV</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Sample Rate:</span>
+                                <span class="spec-val" id="export-sample-rate">44,100 Hz</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Estimated Length:</span>
+                                <span class="spec-val" id="export-est-duration">0.55 sec</span>
+                            </div>
+                        </div>
+
+                        <div class="waveform-export-preview">
+                            <canvas id="export-preview-canvas" width="280" height="60"></canvas>
+                        </div>
+
+                        <div class="export-buttons-wrap">
+                            <button class="btn btn-success btn-block" id="btn-export-wav">
+                                <i class="fa-solid fa-download"></i> RENDER & DOWNLOAD .WAV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal for Hotkeys -->
+    <div class="modal-overlay hidden" id="modal-hotkeys">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-keyboard"></i> Keyboard Shortcuts</h3>
+                <button class="btn-close" id="btn-close-hotkeys">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="hotkey-table">
+                    <tr>
+                        <td><kbd>Spacebar</kbd> / <kbd>Enter</kbd></td>
+                        <td>Trigger Synthesized Sound</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>1</kbd> - <kbd>8</kbd></td>
+                        <td>Quick Trigger Presets (Laser, Explosion, Coin, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>M</kbd></td>
+                        <td>Toggle Master Mute</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>O</kbd></td>
+                        <td>Toggle Spatial 3D Auto-Orbit</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>H</kbd></td>
+                        <td>Toggle HRTF 3D Panning Mode</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Help Guide -->
+    <div class="modal-overlay hidden" id="modal-help">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-circle-info"></i> Studio User Guide</h3>
+                <button class="btn-close" id="btn-close-help">&times;</button>
+            </div>
+            <div class="modal-body text-guide">
+                <h4><i class="fa-solid fa-sliders"></i> Procedural SFX Synthesizer</h4>
+                <p>Select a fundamental waveform (Sine, Square, Saw, Triangle, or Noise). Adjust the start frequency and end frequency to create sweeps (e.g. descending pitches for lasers or explosions). Shape the sound envelope using ADSR sliders.</p>
+
+                <h4><i class="fa-solid fa-cube"></i> 3D Spatial Audio Panner</h4>
+                <p>Drag the cyan sound source node around the 2D grid relative to the listener (blue headphones node in the center). HRTF (Head-Related Transfer Function) calculates realistic 3D spatial cues, binaural pan, and distance attenuation when listened to with headphones.</p>
+
+                <h4><i class="fa-solid fa-download"></i> Audio Exporter</h4>
+                <p>Click "Render & Download .WAV" to capture lossless 16-bit PCM audio generated through `OfflineAudioContext` for instant use in games, apps, or video projects.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="audio-sfx.js"></script>
+</body>
+</html>
