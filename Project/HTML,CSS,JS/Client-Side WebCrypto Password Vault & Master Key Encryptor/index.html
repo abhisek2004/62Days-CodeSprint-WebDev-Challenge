@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisVault - WebCrypto Zero-Knowledge Password Manager</title>
+    <meta name="description" content="Client-side AES-256-GCM zero-knowledge password vault and master key encryptor built with Web Crypto API.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <div id="app" class="app-container">
+        
+        <!-- ================= LOCK / AUTH SCREEN ================= -->
+        <section id="auth-screen" class="screen auth-screen">
+            <div class="auth-card glass-panel">
+                <div class="brand-header">
+                    <div class="shield-logo">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span class="pulse-ring"></span>
+                    </div>
+                    <h1>AEGIS<span>VAULT</span></h1>
+                    <p class="subtitle">Zero-Knowledge AES-256-GCM WebCrypto Safe</p>
+                </div>
+
+                <!-- Setup Vault Form (First Time) -->
+                <form id="setup-form" class="auth-form hidden">
+                    <div class="info-banner">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Create a Master Password. All data is encrypted locally with PBKDF2 + AES-256-GCM. We never store or transmit your master key.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="setup-password"><i class="fa-solid fa-key"></i> Create Master Password</label>
+                        <div class="input-password-wrapper">
+                            <input type="password" id="setup-password" required autocomplete="new-password" placeholder="Enter strong master password...">
+                            <button type="button" class="btn-icon toggle-pass-btn" data-target="setup-password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="pass-strength-bar" id="setup-strength-bar"><div></div></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="setup-confirm"><i class="fa-solid fa-check-double"></i> Confirm Master Password</label>
+                        <div class="input-password-wrapper">
+                            <input type="password" id="setup-confirm" required autocomplete="new-password" placeholder="Re-enter master password...">
+                            <button type="button" class="btn-icon toggle-pass-btn" data-target="setup-confirm">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="pbkdf2-iterations">PBKDF2 Iterations</label>
+                            <select id="pbkdf2-iterations">
+                                <option value="100000">100,000 (Fast)</option>
+                                <option value="250000" selected>250,000 (Recommended)</option>
+                                <option value="600000">600,000 (Paranoid)</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label for="pbkdf2-hash">Hash Algorithm</label>
+                            <input type="text" id="pbkdf2-hash" value="SHA-256" disabled>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-lock"></i> Initialize Encrypted Vault
+                    </button>
+                </form>
+
+                <!-- Unlock Vault Form (Existing Vault) -->
+                <form id="login-form" class="auth-form hidden">
+                    <div class="status-indicator unlocked-badge">
+                        <span class="dot red"></span> Vault Locked
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password"><i class="fa-solid fa-vault"></i> Master Password</label>
+                        <div class="input-password-wrapper">
+                            <input type="password" id="login-password" required autocomplete="current-password" placeholder="Enter master password to decrypt...">
+                            <button type="button" class="btn-icon toggle-pass-btn" data-target="login-password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-lock-open"></i> Decrypt & Access Vault
+                    </button>
+                    <div class="auth-footer-actions">
+                        <button type="button" id="btn-import-auth" class="btn-link">
+                            <i class="fa-solid fa-file-import"></i> Restore from Encrypted Backup
+                        </button>
+                        <button type="button" id="btn-reset-vault" class="btn-link text-danger">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Reset Vault Data
+                        </button>
+                    </div>
+                </form>
+
+                <div class="crypto-specs">
+                    <span><i class="fa-solid fa-shield"></i> AES-256-GCM</span>
+                    <span><i class="fa-solid fa-microchip"></i> SubtleCrypto API</span>
+                    <span><i class="fa-solid fa-fingerprint"></i> Zero-Knowledge</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MAIN VAULT DASHBOARD ================= -->
+        <div id="vault-dashboard" class="dashboard-container hidden">
+            <!-- Sidebar -->
+            <aside class="sidebar glass-panel">
+                <div class="sidebar-brand">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <h2>AEGIS<span>VAULT</span></h2>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" data-tab="all-items">
+                        <i class="fa-solid fa-key"></i> All Passwords
+                        <span class="badge" id="badge-total-count">0</span>
+                    </button>
+                    <button class="nav-item" data-tab="logins">
+                        <i class="fa-solid fa-user-lock"></i> Logins
+                        <span class="badge" id="badge-logins-count">0</span>
+                    </button>
+                    <button class="nav-item" data-tab="cards">
+                        <i class="fa-solid fa-credit-card"></i> Cards & Finance
+                        <span class="badge" id="badge-cards-count">0</span>
+                    </button>
+                    <button class="nav-item" data-tab="notes">
+                        <i class="fa-solid fa-note-sticky"></i> Secure Notes
+                        <span class="badge" id="badge-notes-count">0</span>
+                    </button>
+                    <button class="nav-item" data-tab="favorites">
+                        <i class="fa-solid fa-star"></i> Favorites
+                        <span class="badge" id="badge-favorites-count">0</span>
+                    </button>
+                </nav>
+
+                <div class="sidebar-tools">
+                    <div class="tool-title">SECURITY TOOLS</div>
+                    <button class="tool-btn" id="nav-btn-generator">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Password Generator
+                    </button>
+                    <button class="tool-btn" id="nav-btn-analyzer">
+                        <i class="fa-solid fa-gauge-high"></i> Vault Strength Check
+                    </button>
+                    <button class="tool-btn" id="nav-btn-export">
+                        <i class="fa-solid fa-file-export"></i> Backup & Export
+                    </button>
+                </div>
+
+                <div class="autolock-widget">
+                    <div class="autolock-header">
+                        <span><i class="fa-solid fa-clock-rotate-left"></i> Auto-Lock</span>
+                        <span id="autolock-timer" class="timer-display">05:00</span>
+                    </div>
+                    <div class="autolock-controls">
+                        <select id="autolock-select" title="Auto-Lock Timer Settings">
+                            <option value="60">1 Min</option>
+                            <option value="300" selected>5 Mins</option>
+                            <option value="900">15 Mins</option>
+                            <option value="0">Disabled</option>
+                        </select>
+                        <button id="btn-extend-session" class="btn-small" title="Reset Inactivity Timer">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <button id="btn-lock-vault" class="btn btn-danger btn-block">
+                        <i class="fa-solid fa-lock"></i> Lock Vault Now
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Topbar -->
+                <header class="topbar glass-panel">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-input" placeholder="Search passwords, usernames, websites, tags... (Ctrl+K)">
+                        <button id="clear-search" class="hidden"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="topbar-actions">
+                        <button id="btn-new-entry" class="btn btn-accent">
+                            <i class="fa-solid fa-plus"></i> New Item
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Vault Content Body -->
+                <div class="content-body">
+                    <!-- Security Banner -->
+                    <div class="security-status-bar glass-panel">
+                        <div class="status-metric">
+                            <i class="fa-solid fa-vault icon-green"></i>
+                            <div>
+                                <span class="metric-value" id="metric-total-items">0</span>
+                                <span class="metric-label">Encrypted Records</span>
+                            </div>
+                        </div>
+                        <div class="status-metric">
+                            <i class="fa-solid fa-shield-heart icon-cyan"></i>
+                            <div>
+                                <span class="metric-value" id="metric-vault-score">0%</span>
+                                <span class="metric-label">Vault Health Score</span>
+                            </div>
+                        </div>
+                        <div class="status-metric">
+                            <i class="fa-solid fa-triangle-exclamation icon-yellow"></i>
+                            <div>
+                                <span class="metric-value" id="metric-weak-count">0</span>
+                                <span class="metric-label">Weak/Reused Passwords</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Grid / List Header -->
+                    <div class="list-controls">
+                        <div class="section-title">
+                            <h3 id="current-tab-title">All Vault Records</h3>
+                        </div>
+                        <div class="view-toggles">
+                            <button id="btn-sort-title" class="btn-icon-subtle" title="Sort by Title">
+                                <i class="fa-solid fa-arrow-down-a-z"></i>
+                            </button>
+                            <button id="btn-filter-weak" class="btn-icon-subtle" title="Filter Vulnerable Passwords">
+                                <i class="fa-solid fa-filter"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Vault Cards Grid -->
+                    <div id="vault-items-container" class="vault-grid">
+                        <!-- Dynamic Item Cards Inserted Here -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="empty-state" class="empty-state glass-panel hidden">
+                        <i class="fa-solid fa-box-open"></i>
+                        <h3>No Vault Records Found</h3>
+                        <p>Click "New Item" or import an encrypted backup to add credentials to your safe.</p>
+                        <button class="btn btn-accent btn-trigger-new">
+                            <i class="fa-solid fa-plus"></i> Add First Record
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- ================= MODALS ================= -->
+
+        <!-- 1. ENTRY EDIT / CREATE MODAL -->
+        <div id="modal-entry" class="modal-overlay hidden">
+            <div class="modal-card glass-panel">
+                <div class="modal-header">
+                    <h3 id="modal-entry-title"><i class="fa-solid fa-key"></i> Add Vault Item</h3>
+                    <button class="btn-icon modal-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form id="entry-form">
+                    <input type="hidden" id="entry-id">
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="entry-category">Category</label>
+                            <select id="entry-category" required>
+                                <option value="logins">Login Credentials</option>
+                                <option value="cards">Card / Financial</option>
+                                <option value="notes">Secure Note</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label for="entry-title">Title / Service Name *</label>
+                            <input type="text" id="entry-title" placeholder="e.g. Google, GitHub, Bank" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="entry-username">Username / Email</label>
+                            <input type="text" id="entry-username" placeholder="user@domain.com">
+                        </div>
+                        <div class="form-group half">
+                            <label for="entry-url">Website URL</label>
+                            <input type="url" id="entry-url" placeholder="https://example.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-with-action">
+                            <label for="entry-password">Password / Secret Key</label>
+                            <button type="button" id="btn-quick-generate" class="btn-link">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Strong
+                            </button>
+                        </div>
+                        <div class="input-password-wrapper">
+                            <input type="password" id="entry-password" placeholder="Enter or generate password...">
+                            <button type="button" class="btn-icon toggle-pass-btn" data-target="entry-password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <button type="button" class="btn-icon" id="btn-copy-entry-pass" title="Copy to Clipboard">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="pass-strength-bar" id="entry-strength-bar"><div></div></div>
+                        <span class="strength-text-sm" id="entry-strength-text">Password Strength: Empty</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="entry-notes">Secure Notes / Recovery Codes</label>
+                        <textarea id="entry-notes" rows="3" placeholder="Encrypted notes, 2FA secret recovery keys, security questions..."></textarea>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="entry-favorite">
+                            <span>Mark as Favorite Item</span>
+                        </label>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-floppy-disk"></i> Encrypt & Save Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. PASSWORD GENERATOR MODAL -->
+        <div id="modal-generator" class="modal-overlay hidden">
+            <div class="modal-card glass-panel width-medium">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Cryptographic Password Generator</h3>
+                    <button class="btn-icon modal-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="generator-body">
+                    <div class="generated-display-box">
+                        <div class="gen-output" id="gen-result">Select options below...</div>
+                        <div class="gen-actions">
+                            <button id="btn-gen-refresh" class="btn-icon" title="Generate New">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                            <button id="btn-gen-copy" class="btn btn-accent">
+                                <i class="fa-solid fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="gen-metrics">
+                        <div class="metric-chip">
+                            <span>Entropy:</span> <strong id="gen-entropy">0 bits</strong>
+                        </div>
+                        <div class="metric-chip">
+                            <span>Strength:</span> <strong id="gen-strength-label">Very Weak</strong>
+                        </div>
+                        <div class="metric-chip">
+                            <span>Crack Estimate:</span> <strong id="gen-crack-time">Instant</strong>
+                        </div>
+                    </div>
+
+                    <div class="gen-controls">
+                        <div class="form-group">
+                            <div class="label-with-action">
+                                <label for="gen-length-range">Length: <span id="gen-length-val">20</span> characters</label>
+                            </div>
+                            <input type="range" id="gen-length-range" min="8" max="64" value="20" class="range-slider">
+                        </div>
+
+                        <div class="gen-options-grid">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="gen-inc-uppercase" checked>
+                                <span>Uppercase (A-Z)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="gen-inc-lowercase" checked>
+                                <span>Lowercase (a-z)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="gen-inc-numbers" checked>
+                                <span>Numbers (0-9)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="gen-inc-symbols" checked>
+                                <span>Symbols (!@#$%^&*)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="gen-exc-ambiguous">
+                                <span>Exclude Ambiguous (l, 1, I, O, 0)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. VAULT STRENGTH ANALYZER MODAL -->
+        <div id="modal-analyzer" class="modal-overlay hidden">
+            <div class="modal-card glass-panel width-large">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-shield-heart"></i> Vault Security & Strength Analysis</h3>
+                    <button class="btn-icon modal-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="analyzer-body">
+                    <div class="analyzer-overall-score">
+                        <div class="score-circle">
+                            <span id="analyzer-score-num">0%</span>
+                            <span class="score-lbl">Overall Health</span>
+                        </div>
+                        <div class="score-summary">
+                            <h4 id="analyzer-verdict-title">Security Status</h4>
+                            <p id="analyzer-verdict-desc">Analyzing your vault stored items...</p>
+                        </div>
+                    </div>
+
+                    <div class="analyzer-sections">
+                        <div class="analyzer-card">
+                            <h4><i class="fa-solid fa-circle-exclamation icon-yellow"></i> Weak Passwords (<span id="analyzer-weak-cnt">0</span>)</h4>
+                            <ul id="list-analyzer-weak" class="vulnerability-list"></ul>
+                        </div>
+                        <div class="analyzer-card">
+                            <h4><i class="fa-solid fa-copy icon-red"></i> Reused Passwords (<span id="analyzer-reused-cnt">0</span>)</h4>
+                            <ul id="list-analyzer-reused" class="vulnerability-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. BACKUP / IMPORT / EXPORT MODAL -->
+        <div id="modal-backup" class="modal-overlay hidden">
+            <div class="modal-card glass-panel width-medium">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-file-shield"></i> Backup & Restore Encrypted Vault</h3>
+                    <button class="btn-icon modal-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="backup-body">
+                    <div class="backup-section">
+                        <h4><i class="fa-solid fa-download icon-cyan"></i> Export Encrypted Backup</h4>
+                        <p class="desc">Download your entire vault as an encrypted `.vault.json` file locked with your current master password.</p>
+                        <button id="btn-do-export" class="btn btn-primary">
+                            <i class="fa-solid fa-file-export"></i> Download Encrypted Vault JSON
+                        </button>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="backup-section">
+                        <h4><i class="fa-solid fa-upload icon-green"></i> Restore Encrypted Backup</h4>
+                        <p class="desc">Import an existing `.vault.json` backup file. You will need the master key used when the backup was created.</p>
+                        <input type="file" id="file-import-input" accept=".json,.vault" class="hidden">
+                        <button id="btn-trigger-import-file" class="btn btn-secondary">
+                            <i class="fa-solid fa-file-import"></i> Select Backup File to Restore
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <script src="vault-app.js"></script>
+</body>
+</html>
