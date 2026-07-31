@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Bandwidth Estimation & Network Packet Loss Inspector</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header / Navbar -->
+        <header class="app-header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>WebRTC Bandwidth & Packet Loss Inspector</h1>
+                    <p class="subtitle">Real-time RTCStatsReport Analyzer & Adaptive Congestion Diagnostic Studio</p>
+                </div>
+            </div>
+
+            <div class="header-status">
+                <div class="status-indicator-box">
+                    <span class="status-dot disconnected" id="connectionDot"></span>
+                    <span class="status-text" id="connectionStatus">DISCONNECTED</span>
+                </div>
+                <div class="quality-badge" id="qualityBadge">
+                    <span>Quality:</span>
+                    <strong id="qualityScore">--%</strong>
+                </div>
+                <button class="btn btn-primary" id="btnStartCall">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Start WebRTC Loopback
+                </button>
+                <button class="btn btn-danger hidden" id="btnStopCall">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12"/></svg>
+                    Stop Call
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="dashboard-grid">
+            <!-- Left Sidebar: Controls & Network Throttler -->
+            <aside class="sidebar-panel">
+                <!-- Media Source Settings -->
+                <div class="card panel-card">
+                    <div class="card-header">
+                        <h3>Media Source & Stream</h3>
+                        <span class="badge">Local Testbench</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="videoSourceSelect">Video Source</label>
+                            <select id="videoSourceSelect" class="form-control">
+                                <option value="synthetic">Synthetic Test Pattern (4K/1080p Matrix)</option>
+                                <option value="camera">Live Camera (Webcam)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="degradationPref">Degradation Preference</label>
+                            <select id="degradationPref" class="form-control">
+                                <option value="maintain-framerate">Maintain Framerate (Drop Res)</option>
+                                <option value="maintain-resolution">Maintain Resolution (Drop FPS)</option>
+                                <option value="balanced">Balanced Mode</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="targetBitrate">Target Max Bitrate (kbps)</label>
+                            <input type="range" id="targetBitrate" min="100" max="6000" step="100" value="2500">
+                            <div class="range-val"><span id="targetBitrateVal">2500</span> kbps</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Simulator / Throttler -->
+                <div class="card panel-card highlight-border">
+                    <div class="card-header">
+                        <h3>Simulated Network Environment</h3>
+                        <span class="badge badge-warning">Impairment Engine</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="panel-desc">Inject artificial delay, packet drops, and bandwidth limits into the WebRTC stream metrics.</p>
+
+                        <!-- Quick Presets -->
+                        <div class="preset-buttons">
+                            <button class="btn btn-sm btn-outline active" data-preset="clean">0% Clean</button>
+                            <button class="btn btn-sm btn-outline" data-preset="loss5">5% Loss</button>
+                            <button class="btn btn-sm btn-outline" data-preset="loss10">10% Loss</button>
+                            <button class="btn btn-sm btn-outline" data-preset="loss20">20% Loss</button>
+                            <button class="btn btn-sm btn-outline" data-preset="spike">RTT Spike</button>
+                            <button class="btn btn-sm btn-outline" data-preset="choke">250k Choke</button>
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="form-group">
+                                <label>Artificial Packet Loss (%): <strong id="packetLossVal">0%</strong></label>
+                                <input type="range" id="simPacketLoss" min="0" max="40" step="1" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Added Latency / RTT (ms): <strong id="simRttVal">0 ms</strong></label>
+                                <input type="range" id="simRtt" min="0" max="800" step="10" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Network Jitter Variance (ms): <strong id="simJitterVal">2 ms</strong></label>
+                                <input type="range" id="simJitter" min="0" max="150" step="2" value="2">
+                            </div>
+                            <div class="form-group">
+                                <label>Bandwidth Limit (kbps): <strong id="simBwVal">Unlimited</strong></label>
+                                <input type="range" id="simBw" min="100" max="8000" step="100" value="8000">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary w-100 mt-2" id="btnRunStressTest">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                            Run 30s Stress Audit
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export & Diagnostic Tools -->
+                <div class="card panel-card">
+                    <div class="card-header">
+                        <h3>Diagnostic Reports</h3>
+                    </div>
+                    <div class="card-body btn-grid">
+                        <button class="btn btn-outline" id="btnExportJSON">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Export JSON Report
+                        </button>
+                        <button class="btn btn-outline" id="btnExportSummary">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            Export Summary (.txt)
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Content: Video Feeds & Realtime Graphs -->
+            <section class="main-content">
+                <!-- Video Monitor & Stream Metrics Bar -->
+                <div class="video-grid-container">
+                    <div class="video-card">
+                        <div class="video-header">
+                            <span>TRANSMITTER (Local Stream)</span>
+                            <span class="res-badge" id="localResBadge">0x0 @ 0 FPS</span>
+                        </div>
+                        <div class="video-wrapper">
+                            <canvas id="syntheticCanvas" width="640" height="360" class="hidden"></canvas>
+                            <video id="localVideo" autoplay playsinline muted></video>
+                            <div class="video-overlay">
+                                <span class="overlay-tag">TX SENDER</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <div class="video-header">
+                            <span>RECEIVER (Remote Loopback Stream)</span>
+                            <span class="res-badge" id="remoteResBadge">0x0 @ 0 FPS</span>
+                        </div>
+                        <div class="video-wrapper">
+                            <video id="remoteVideo" autoplay playsinline></video>
+                            <div class="video-overlay">
+                                <span class="overlay-tag rx-tag">RX RECEIVER</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metric Summary Strip -->
+                <div class="metric-strip">
+                    <div class="metric-card">
+                        <div class="metric-title">Available Bandwidth (BWE)</div>
+                        <div class="metric-value cyan-text" id="metricBwe">0 kbps</div>
+                        <div class="metric-sub" id="metricBitrateTxRx">Tx: 0 / Rx: 0 kbps</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Round Trip Time (RTT)</div>
+                        <div class="metric-value yellow-text" id="metricRtt">0 ms</div>
+                        <div class="metric-sub" id="metricRttStatus">Optimal latency</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Packet Loss Rate</div>
+                        <div class="metric-value red-text" id="metricLossRate">0.0 %</div>
+                        <div class="metric-sub" id="metricLostPackets">0 packets lost</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Jitter</div>
+                        <div class="metric-value purple-text" id="metricJitter">0 ms</div>
+                        <div class="metric-sub" id="metricFreezeCount">Freezes: 0</div>
+                    </div>
+                </div>
+
+                <!-- Real-time Chart Panels Grid -->
+                <div class="charts-grid">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h4>Bitrate & Estimated Bandwidth (kbps)</h4>
+                            <div class="legend-pills">
+                                <span class="pill pill-cyan">Estimated BWE</span>
+                                <span class="pill pill-green">Tx Bitrate</span>
+                                <span class="pill pill-blue">Rx Bitrate</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="chartBitrate"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h4>Round Trip Time (RTT & Latency ms)</h4>
+                            <div class="legend-pills">
+                                <span class="pill pill-yellow">Current RTT</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="chartRtt"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h4>Packet Loss Rate (%) & Drop Count</h4>
+                            <div class="legend-pills">
+                                <span class="pill pill-red">Loss %</span>
+                                <span class="pill pill-orange">Cum. Packets Lost</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="chartLoss"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h4>Jitter & Frame Rate (FPS)</h4>
+                            <div class="legend-pills">
+                                <span class="pill pill-purple">Jitter (ms)</span>
+                                <span class="pill pill-cyan">Decode FPS</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="chartJitterFps"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Section: RTCStats Inspector Table & Diagnostics Console -->
+                <div class="bottom-grid">
+                    <!-- Diagnostic Terminal Log -->
+                    <div class="card console-card">
+                        <div class="card-header">
+                            <h4>Network Diagnostic Terminal & Congestion Log</h4>
+                            <button class="btn btn-xs btn-outline" id="btnClearConsole">Clear Log</button>
+                        </div>
+                        <div class="console-body" id="consoleBody">
+                            <div class="log-line log-system">[INIT] WebRTC Bandwidth & Packet Loss Inspector loaded.</div>
+                            <div class="log-line log-info">[INFO] Click "Start WebRTC Loopback" to begin real-time RTCStats collection.</div>
+                        </div>
+                    </div>
+
+                    <!-- Raw RTCStats Explorer -->
+                    <div class="card raw-stats-card">
+                        <div class="card-header">
+                            <h4>RTCStatsReport Live Inspector</h4>
+                            <select id="statsFilterSelect" class="form-control form-control-sm" style="width: auto;">
+                                <option value="all">All Stats</option>
+                                <option value="outbound-rtp">outbound-rtp</option>
+                                <option value="inbound-rtp">inbound-rtp</option>
+                                <option value="candidate-pair">candidate-pair</option>
+                                <option value="transport">transport</option>
+                            </select>
+                        </div>
+                        <div class="raw-stats-body">
+                            <table class="stats-table">
+                               <thead>
+                                   <tr>
+                                       <th>Type / ID</th>
+                                       <th>Key Metric</th>
+                                       <th>Value</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="rawStatsTableBody">
+                                   <tr><td colspan="3" class="text-center">No active RTCStats session</td></tr>
+                               </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Script Import -->
+    <script src="webrtc-inspector.js"></script>
+</body>
+</html>
