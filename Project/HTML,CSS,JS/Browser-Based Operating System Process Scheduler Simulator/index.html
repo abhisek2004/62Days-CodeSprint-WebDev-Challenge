@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OS Process Scheduler Simulator & Visualizer</title>
+    <meta name="description" content="An interactive, real-time educational simulator for operating system CPU process scheduling algorithms (FCFS, SJF, Priority, Round Robin).">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+            <div class="logo-text">
+                <h1>OS Process Scheduler <span class="badge-tag">SimOS v2.4</span></h1>
+                <p>Interactive CPU Scheduling Algorithm Visualizer</p>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <button id="btn-algorithm-compare" class="btn btn-secondary">
+                <i class="fa-solid fa-chart-line"></i> Compare All Algorithms
+            </button>
+            <button id="btn-theme-toggle" class="btn btn-icon" title="Toggle Light/Dark Theme">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Sidebar Controls & Config -->
+        <aside class="sidebar">
+            <!-- Algorithm Configuration Section -->
+            <section class="card config-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-sliders"></i> Algorithm Config</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="algorithm-select">Scheduling Algorithm</label>
+                        <select id="algorithm-select" class="form-control">
+                            <option value="FCFS">First Come First Served (FCFS)</option>
+                            <option value="SJF_NP">Shortest Job First (Non-Preemptive)</option>
+                            <option value="SJF_P">Shortest Remaining Time First (SRTF / Preemptive SJF)</option>
+                            <option value="PRIO_NP">Priority Scheduling (Non-Preemptive)</option>
+                            <option value="PRIO_P">Priority Scheduling (Preemptive)</option>
+                            <option value="RR" selected>Round Robin (RR)</option>
+                        </select>
+                    </div>
+
+                    <!-- Round Robin Time Quantum Setting -->
+                    <div class="form-group" id="rr-quantum-container">
+                        <div class="label-with-val">
+                            <label for="time-quantum">Time Quantum ($\Delta t$)</label>
+                            <span id="quantum-val" class="val-badge">2</span>
+                        </div>
+                        <input type="number" id="time-quantum" class="form-control" min="1" max="20" value="2">
+                    </div>
+
+                    <!-- Priority Mode Configuration -->
+                    <div class="form-group" id="priority-order-container" style="display: none;">
+                        <label for="priority-order">Priority Evaluation</label>
+                        <select id="priority-order" class="form-control">
+                            <option value="LOW_NUM_HIGH_PRIO">Lower Number = Higher Priority (e.g. 1 is highest)</option>
+                            <option value="HIGH_NUM_HIGH_PRIO">Higher Number = Higher Priority (e.g. 10 is highest)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="preset-select">Preset Workloads & Scenarios</label>
+                        <select id="preset-select" class="form-control">
+                            <option value="" disabled selected>-- Select Preset Scenario --</option>
+                            <option value="benchmark">Standard Mixed Benchmark</option>
+                            <option value="convoy">Convoy Effect Demo (FCFS Delay)</option>
+                            <option value="srtf_preempt">SRTF Preemption Dynamic Interruption</option>
+                            <option value="priority_demo">Priority Scheduling & Starvation</option>
+                            <option value="rr_quantum">Round Robin Time Slicing</option>
+                        </select>
+                    </div>
+                    
+                    <button id="btn-random-processes" class="btn btn-outline btn-full">
+                        <i class="fa-solid fa-dice"></i> Generate Random Processes
+                    </button>
+                </div>
+            </section>
+
+            <!-- Process Queue Add Form -->
+            <section class="card process-form-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-square-plus"></i> Add New Process</h2>
+                </div>
+                <div class="card-body">
+                    <form id="add-process-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="proc-id">Process ID</label>
+                                <input type="text" id="proc-id" class="form-control" placeholder="P1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="proc-color">Badge Color</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="proc-color" value="#3b82f6" class="color-input">
+                                    <button type="button" id="btn-random-color" class="btn-color-pick" title="Random Color">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="proc-arrival">Arrival Time</label>
+                                <input type="number" id="proc-arrival" class="form-control" min="0" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="proc-burst">Burst Time</label>
+                                <input type="number" id="proc-burst" class="form-control" min="1" value="4" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="proc-priority">Priority Level</label>
+                            <input type="number" id="proc-priority" class="form-control" min="1" value="1" required>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary btn-full">
+                                <i class="fa-solid fa-plus"></i> Add Process
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Process Input Table -->
+            <section class="card process-list-card">
+                <div class="card-header flex-between">
+                    <h2><i class="fa-solid fa-list-check"></i> Process Job Queue (<span id="process-count">0</span>)</h2>
+                    <button id="btn-clear-processes" class="btn btn-xs btn-danger" title="Clear All Processes">
+                        <i class="fa-solid fa-trash"></i> Clear All
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="data-table" id="process-input-table">
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>Arrival</th>
+                                    <th>Burst</th>
+                                    <th>Prio</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="process-table-body">
+                                <!-- Process Rows Injected Here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="empty-queue-msg" class="empty-state">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <p>No processes in queue. Add custom processes or load a preset.</p>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Main Visualization & Dashboard Workspace -->
+        <section class="workspace">
+
+            <!-- Playback Control Toolbar -->
+            <div class="card playback-card">
+                <div class="playback-controls">
+                    <div class="btn-playback-group">
+                        <button id="btn-reset" class="btn btn-control" title="Reset Simulation">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                        <button id="btn-step-prev" class="btn btn-control" title="Step Back">
+                            <i class="fa-solid fa-backward-step"></i>
+                        </button>
+                        <button id="btn-play-pause" class="btn btn-control btn-play" title="Play / Pause">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                        <button id="btn-step-next" class="btn btn-control" title="Step Forward">
+                            <i class="fa-solid fa-forward-step"></i>
+                        </button>
+                        <button id="btn-jump-end" class="btn btn-control" title="Jump to End">
+                            <i class="fa-solid fa-fast-forward"></i>
+                        </button>
+                    </div>
+
+                    <div class="simulation-time-display">
+                        <span class="time-label">System Clock:</span>
+                        <span id="current-time-tick" class="time-value">0</span>
+                        <span class="time-unit">units</span>
+                    </div>
+
+                    <div class="speed-control">
+                        <label for="speed-slider"><i class="fa-solid fa-gauge-high"></i> Speed:</label>
+                        <input type="range" id="speed-slider" min="1" max="10" value="5" step="1">
+                        <span id="speed-val">1.0x</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CPU & Real-time Queue Live Status Monitor -->
+            <div class="status-grid">
+                <!-- Ready Queue Visualizer -->
+                <div class="card status-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-layer-group"></i> Ready Queue</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="ready-queue-container" class="queue-flex-container">
+                            <span class="empty-badge">Ready queue empty</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active CPU Core Status -->
+                <div class="card status-card cpu-status-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-microchip"></i> CPU Core State</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="cpu-core-box" class="cpu-core-box cpu-idle">
+                            <div class="cpu-core-icon">
+                                <i class="fa-solid fa-server"></i>
+                            </div>
+                            <div class="cpu-core-info">
+                                <span class="cpu-state-title" id="cpu-active-pid">IDLE</span>
+                                <span class="cpu-subtext" id="cpu-active-details">No active process</span>
+                            </div>
+                            <div class="cpu-progress-ring" id="cpu-progress-bar" style="--progress: 0%;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terminated Queue Visualizer -->
+                <div class="card status-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-circle-check"></i> Completed Processes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="terminated-queue-container" class="queue-flex-container">
+                            <span class="empty-badge">None completed yet</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gantt Chart Section -->
+            <div class="card gantt-card">
+                <div class="card-header flex-between">
+                    <h2><i class="fa-solid fa-chart-gantt"></i> Interactive CPU Execution Gantt Chart</h2>
+                    <div class="gantt-legend" id="gantt-legend-container">
+                        <!-- Dynamic Legend Badges -->
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="gantt-outer-scroll">
+                        <div id="gantt-chart-container" class="gantt-chart-container">
+                            <div class="gantt-track" id="gantt-track">
+                                <!-- Gantt blocks injected via JavaScript -->
+                            </div>
+                            <div class="gantt-scale" id="gantt-scale">
+                                <!-- Timeline scale ticks injected here -->
+                            </div>
+                            <div class="gantt-playhead" id="gantt-playhead">
+                                <div class="playhead-line"></div>
+                                <div class="playhead-tag" id="playhead-time-tag">t=0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculated Metrics & Execution Result Table -->
+            <div class="card results-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-table-list"></i> Process Execution Evaluation Schedule</h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="data-table result-table" id="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Process ID</th>
+                                    <th>Arrival Time</th>
+                                    <th>Burst Time</th>
+                                    <th>Priority</th>
+                                    <th>Completion Time (CT)</th>
+                                    <th>Turnaround Time (TAT)</th>
+                                    <th>Waiting Time (WT)</th>
+                                    <th>Response Time (RT)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">Run or step through simulation to compute schedule metrics.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Statistics Summary Panel -->
+            <div class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-icon bg-blue">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Avg Waiting Time</span>
+                        <h3 class="stat-value" id="stat-avg-wt">0.00 <small>units</small></h3>
+                        <p class="stat-desc">TAT - BT (Average delay)</p>
+                    </div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-icon bg-purple">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Avg Turnaround Time</span>
+                        <h3 class="stat-value" id="stat-avg-tat">0.00 <small>units</small></h3>
+                        <p class="stat-desc">CT - AT (Total time in system)</p>
+                    </div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-icon bg-emerald">
+                        <i class="fa-solid fa-percent"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">CPU Utilization</span>
+                        <h3 class="stat-value" id="stat-cpu-util">0.0%</h3>
+                        <p class="stat-desc">Ratio of non-idle CPU time</p>
+                    </div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-icon bg-amber">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Throughput</span>
+                        <h3 class="stat-value" id="stat-throughput">0.00 <small>proc/unit</small></h3>
+                        <p class="stat-desc">Completed jobs / Total Time</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Algorithm Explanation & Formula Reference Card -->
+            <div class="card info-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-book-open"></i> Algorithm Knowledge Base & Details</h2>
+                </div>
+                <div class="card-body">
+                    <div id="algo-info-content" class="algo-info-box">
+                        <!-- Dynamic Info populated based on active algorithm selection -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Algorithm Comparison Modal -->
+    <div id="compare-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-code-compare"></i> Multi-Algorithm Side-by-Side Comparison</h3>
+                <button id="btn-close-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-subtitle">Evaluating current process queue across all 6 standard CPU scheduling algorithms:</p>
+
+                <!-- Comparison Table -->
+                <div class="table-responsive">
+                    <table class="data-table compare-table" id="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Avg Waiting Time</th>
+                                <th>Avg Turnaround Time</th>
+                                <th>Avg Response Time</th>
+                                <th>CPU Utilization</th>
+                                <th>Context Switches</th>
+                                <th>Evaluation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparison-table-body">
+                            <!-- Injected comparison rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Comparison Gantt Charts Stack -->
+                <div class="comparison-gantts" id="comparison-gantts-container">
+                    <h4>Comparative Gantt Timelines</h4>
+                    <!-- Dynamic Comparative Gantts Injected Here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>Operating System Process Scheduler Simulator &copy; 2026 | Built for OS & Computer Architecture Education</p>
+    </footer>
+
+    <!-- Main JavaScript Logic -->
+    <script src="process-scheduler.js"></script>
+</body>
+</html>
