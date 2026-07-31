@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionStudio AI - Client-Side Neural Network & Computer Vision Classifier</title>
+  <meta name="description" content="Interactive browser-based Neural Network training & Computer Vision classification suite powered by HTML5 Canvas & Custom Lightweight JS Neural Engine.">
+  <link rel="stylesheet" href="style.css">
+  <!-- Optional TFJS for GPU acceleration fallback, fully compatible with embedded custom engine -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>VisionStudio <span class="badge">AI STUDIO</span></h1>
+        <p>Client-Side Neural Network Training & CV Classifier</p>
+      </div>
+    </div>
+
+    <div class="engine-status-bar">
+      <div class="status-chip" id="engine-chip">
+        <span class="dot active"></span>
+        <span class="chip-label">Engine:</span>
+        <strong id="engine-name">Custom JS Neural Engine</strong>
+      </div>
+      <div class="status-chip">
+        <span class="chip-label">FPS:</span>
+        <strong id="fps-counter">60</strong>
+      </div>
+      <div class="status-chip">
+        <span class="chip-label">Dataset:</span>
+        <strong id="total-samples-count">0 Samples</strong>
+      </div>
+      <div class="status-chip">
+        <span class="chip-label">Backend:</span>
+        <strong id="backend-type">WebGL / CPU</strong>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="btn-quick-demo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        Load Preset Demo
+      </button>
+      <button class="btn btn-outline" id="btn-toggle-camera">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        <span id="cam-toggle-text">Start Camera</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <main class="studio-layout">
+    <!-- Left Column: Data Collection & Camera Feed -->
+    <section class="panel dataset-panel">
+      <div class="panel-header">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          1. Dataset Collector
+        </h2>
+        <span class="tooltip-trigger" title="Capture training frames from your webcam or drag & drop image files into custom categories.">?</span>
+      </div>
+
+      <!-- Live Video / Canvas Input -->
+      <div class="input-feed-wrapper">
+        <div class="video-container">
+          <video id="webcam-feed" autoplay playsinline muted></video>
+          <canvas id="snapshot-canvas" width="64" height="64"></canvas>
+          <div class="feed-overlay" id="feed-overlay">
+            <span class="status-msg">Webcam inactive</span>
+          </div>
+          <div class="canvas-grid-overlay"></div>
+        </div>
+
+        <div class="feed-controls">
+          <div class="source-selector">
+            <label for="camera-select">Source:</label>
+            <select id="camera-select" class="form-select">
+              <option value="user">Front Camera</option>
+              <option value="environment">Back Camera</option>
+            </select>
+          </div>
+          <div class="upload-btn-wrapper">
+            <button class="btn btn-sm btn-secondary" id="btn-trigger-upload">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Upload Batch
+            </button>
+            <input type="file" id="image-upload-input" accept="image/*" multiple hidden>
+          </div>
+        </div>
+      </div>
+
+      <!-- Class Management & Sample Collector -->
+      <div class="class-collector-section">
+        <div class="section-title">
+          <h3>Custom Classes</h3>
+          <button class="btn btn-xs btn-primary" id="btn-add-class">+ Add Class</button>
+        </div>
+
+        <div class="class-cards-container" id="class-cards-list">
+          <!-- Dynamically populated class cards -->
+        </div>
+
+        <!-- Data Augmentation Settings -->
+        <div class="augmentation-box">
+          <div class="aug-title">Data Augmentations (Auto-applied)</div>
+          <div class="aug-checkboxes">
+            <label><input type="checkbox" id="aug-flip" checked> Horiz. Flip</label>
+            <label><input type="checkbox" id="aug-rotate" checked> Random Rotation</label>
+            <label><input type="checkbox" id="aug-noise" checked> Gaussian Noise</label>
+            <label><input type="checkbox" id="aug-brightness"> Brightness Shift</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Center Column: CNN Architecture & Training Dashboard -->
+    <section class="center-column">
+      <!-- CNN Architecture Visualizer -->
+      <section class="panel visualizer-panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            2. CNN Neural Architecture Visualizer
+          </h2>
+          <div class="preset-architecture">
+            <label for="arch-select">Architecture Preset:</label>
+            <select id="arch-select" class="form-select-sm">
+              <option value="light-cnn">Lightweight CNN (Conv2D -> MaxPool -> Dense)</option>
+              <option value="deep-cnn">Deep Vision CNN (2x Conv2D -> MaxPool -> 2x Dense)</option>
+              <option value="mlp">Multi-Layer Perceptron (Flat Dense)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Interactive Architecture Canvas -->
+        <div class="arch-canvas-container">
+          <canvas id="arch-canvas" width="800" height="260"></canvas>
+          <div class="arch-info-banner" id="arch-info-banner">
+            <span>Input: 28x28 Grayscale / RGB</span> &rarr;
+            <span>Conv2D: 8 Filters (3x3)</span> &rarr;
+            <span>MaxPool: 2x2</span> &rarr;
+            <span>Dense: 32 Neurons (ReLU)</span> &rarr;
+            <span>Output: Softmax</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Training & Metrics Dashboard -->
+      <section class="panel training-panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            3. Real-Time Neural Network Training Dashboard
+          </h2>
+          <div class="training-controls">
+            <button class="btn btn-success" id="btn-start-train">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Train Model
+            </button>
+            <button class="btn btn-warning" id="btn-pause-train" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+              Pause
+            </button>
+            <button class="btn btn-danger" id="btn-reset-train">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              Reset Weights
+            </button>
+          </div>
+        </div>
+
+        <!-- Hyperparameter Inputs -->
+        <div class="hyperparams-grid">
+          <div class="param-card">
+            <label for="param-epochs">Epochs:</label>
+            <input type="number" id="param-epochs" min="5" max="200" value="30" class="form-input">
+          </div>
+          <div class="param-card">
+            <label for="param-batch-size">Batch Size:</label>
+            <select id="param-batch-size" class="form-select-sm">
+              <option value="4">4</option>
+              <option value="8" selected>8</option>
+              <option value="16">16</option>
+              <option value="32">32</option>
+            </select>
+          </div>
+          <div class="param-card">
+            <label for="param-lr">Learning Rate (α):</label>
+            <input type="number" id="param-lr" step="0.001" min="0.0001" max="0.1" value="0.005" class="form-input">
+          </div>
+          <div class="param-card">
+            <label for="param-optimizer">Optimizer:</label>
+            <select id="param-optimizer" class="form-select-sm">
+              <option value="adam">Adam</option>
+              <option value="sgd">SGD + Momentum</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Real-Time Training Charts -->
+        <div class="training-metrics-container">
+          <div class="chart-wrapper">
+            <div class="chart-header">
+              <span class="chart-title">Loss Curve (Categorical Cross-Entropy)</span>
+              <span class="current-stat" id="stat-loss">Loss: --</span>
+            </div>
+            <canvas id="loss-chart-canvas" width="380" height="170"></canvas>
+          </div>
+
+          <div class="chart-wrapper">
+            <div class="chart-header">
+              <span class="chart-title">Training Accuracy (%)</span>
+              <span class="current-stat" id="stat-acc">Acc: --%</span>
+            </div>
+            <canvas id="acc-chart-canvas" width="380" height="170"></canvas>
+          </div>
+        </div>
+
+        <!-- Training Progress Bar -->
+        <div class="progress-bar-container">
+          <div class="progress-info">
+            <span id="training-status-text">Ready to train...</span>
+            <span id="training-epoch-text">Epoch 0 / 30</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="training-progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- Right Column: Real-Time Inference & Model Management -->
+    <section class="panel inference-panel">
+      <div class="panel-header">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          4. Live CV Classifier Inference
+        </h2>
+        <div class="inference-toggle-box">
+          <label class="switch">
+            <input type="checkbox" id="toggle-live-inference" checked>
+            <span class="slider round"></span>
+          </label>
+          <span class="switch-label">Live Classification</span>
+        </div>
+      </div>
+
+      <!-- Inference Display Canvas Overlay & Top Prediction -->
+      <div class="inference-preview-box">
+        <canvas id="live-inference-canvas" width="280" height="210"></canvas>
+        <div class="top-prediction-badge" id="top-pred-badge">
+          <div class="pred-label" id="pred-class-name">Waiting...</div>
+          <div class="pred-confidence" id="pred-class-percent">0.0%</div>
+        </div>
+      </div>
+
+      <!-- Class Probability Meters List -->
+      <div class="meters-container">
+        <h3>Class Confidence Spectrum</h3>
+        <div id="class-probability-meters" class="probability-meters-list">
+          <!-- Dynamically populated meters -->
+        </div>
+      </div>
+
+      <div class="inference-settings">
+        <div class="setting-row">
+          <label for="slider-threshold">Confidence Threshold:</label>
+          <input type="range" id="slider-threshold" min="0" max="100" value="30">
+          <span id="threshold-val">30%</span>
+        </div>
+        <div class="setting-row">
+          <label for="toggle-audio"><input type="checkbox" id="toggle-audio"> Speech Announce</label>
+          <label for="toggle-heatmap"><input type="checkbox" id="toggle-heatmap" checked> Feature Overlay</label>
+        </div>
+      </div>
+
+      <!-- Model Serialization Panel -->
+      <div class="model-serialization-section">
+        <div class="section-title">
+          <h3>5. Model Serialization & Export</h3>
+        </div>
+        <div class="serialize-buttons">
+          <button class="btn btn-sm btn-outline" id="btn-export-json">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export JSON + Weights
+          </button>
+          <label class="btn btn-sm btn-outline btn-import-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Import Model
+            <input type="file" id="btn-import-file" accept=".json" hidden>
+          </label>
+        </div>
+        <div class="localstorage-buttons">
+          <button class="btn btn-xs btn-secondary" id="btn-save-local">Save to Browser Storage</button>
+          <button class="btn btn-xs btn-secondary" id="btn-load-local">Load from Storage</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal for Dataset Preview / Image Inspection -->
+  <div class="modal-backdrop" id="image-modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-class-title">Class Samples</h3>
+        <button class="close-btn" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-samples-grid">
+        <!-- Render sample thumbnails -->
+      </div>
+    </div>
+  </div>
+
+  <script src="cv-classifier.js"></script>
+</body>
+</html>
