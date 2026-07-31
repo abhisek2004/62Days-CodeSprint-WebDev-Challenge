@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WASM VideoCraft Studio | Client-Side Video Watermarking & Frame Extractor</title>
+    <meta name="description" content="Professional client-side WebAssembly video processing suite. Watermark videos with custom text or logos, extract high-resolution keyframe snapshots, and export encoded MP4/WebM videos directly in your browser.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="app-header">
+            <div class="brand-container">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-film"></i>
+                    <span class="wasm-badge">WASM</span>
+                </div>
+                <div class="brand-text">
+                    <h1>VideoCraft <span>Studio</span></h1>
+                    <p class="tagline">Client-Side WASM Video Watermarking & Frame Extractor Engine</p>
+                </div>
+            </div>
+            
+            <div class="header-status">
+                <div class="status-indicator online">
+                    <span class="ping-dot"></span>
+                    <span class="status-text">WASM SIMD Engine: <strong id="wasmStatusText">Ready (8 Threads)</strong></span>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btnHelpModal">
+                    <i class="fa-solid fa-circle-question"></i> Guide
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Studio Workspace Grid -->
+        <main class="studio-workspace">
+            
+            <!-- Left Sidebar Controls -->
+            <aside class="control-sidebar">
+                
+                <!-- Navigation Tabs inside Sidebar -->
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" data-tab="tab-watermark">
+                        <i class="fa-solid fa-stamp"></i> Watermark
+                    </button>
+                    <button class="tab-btn" data-tab="tab-extractor">
+                        <i class="fa-solid fa-images"></i> Keyframes
+                    </button>
+                    <button class="tab-btn" data-tab="tab-export">
+                        <i class="fa-solid fa-sliders"></i> Pipeline & Export
+                    </button>
+                </div>
+
+                <div class="tab-content-container">
+                    
+                    <!-- TAB 1: WATERMARK CONTROLS -->
+                    <div class="tab-pane active" id="tab-watermark">
+                        
+                        <!-- Watermark Type Selector -->
+                        <div class="control-group">
+                            <label class="control-label">Watermark Type</label>
+                            <div class="toggle-switch-group">
+                                <button class="toggle-btn active" id="typeTextBtn">
+                                    <i class="fa-solid fa-font"></i> Text
+                                </button>
+                                <button class="toggle-btn" id="typeImageBtn">
+                                    <i class="fa-solid fa-image"></i> Logo Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TEXT WATERMARK PANEL -->
+                        <div class="panel-section" id="textWatermarkPanel">
+                            <div class="control-group">
+                                <label for="wmTextInput" class="control-label">Watermark Text</label>
+                                <div class="input-with-icon">
+                                    <i class="fa-solid fa-pen"></i>
+                                    <input type="text" id="wmTextInput" value="© 2026 WASM STUDIO • CONFIDENTIAL" placeholder="Enter text...">
+                                </div>
+                            </div>
+
+                            <div class="control-row-2col">
+                                <div class="control-group">
+                                    <label for="wmFontFamily" class="control-label">Font Style</label>
+                                    <select id="wmFontFamily" class="select-input">
+                                        <option value="Inter, sans-serif" selected>Inter (Modern)</option>
+                                        <option value="Outfit, sans-serif">Outfit (Bold Tech)</option>
+                                        <option value="'Fira Code', monospace">Fira Code (Monospace)</option>
+                                        <option value="Impact, sans-serif">Impact (Heavy)</option>
+                                        <option value="Georgia, serif">Georgia (Classic)</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label for="wmFontSize" class="control-label">Size (<span id="fontSizeVal">36</span>px)</label>
+                                    <input type="range" id="wmFontSize" min="12" max="140" value="36">
+                                </div>
+                            </div>
+
+                            <div class="control-row-2col">
+                                <div class="control-group">
+                                    <label for="wmTextColor" class="control-label">Text Color</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="wmTextColor" value="#ffffff">
+                                        <span class="color-hex" id="textColorHex">#FFFFFF</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="wmOpacity" class="control-label">Opacity (<span id="opacityVal">85</span>%)</label>
+                                    <input type="range" id="wmOpacity" min="10" max="100" value="85">
+                                </div>
+                            </div>
+
+                            <div class="control-row-2col">
+                                <div class="control-group">
+                                    <label for="wmOutlineColor" class="control-label">Outline Color</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="wmOutlineColor" value="#000000">
+                                        <span class="color-hex" id="outlineColorHex">#000000</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="wmOutlineWidth" class="control-label">Stroke (<span id="outlineWidthVal">2</span>px)</label>
+                                    <input type="range" id="wmOutlineWidth" min="0" max="15" value="2">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="wmRotation" class="control-label">Rotation Angle (<span id="rotationVal">0</span>°)</label>
+                                <input type="range" id="wmRotation" min="-180" max="180" value="0">
+                            </div>
+                        </div>
+
+                        <!-- IMAGE LOGO WATERMARK PANEL -->
+                        <div class="panel-section hidden" id="imageWatermarkPanel">
+                            <div class="control-group">
+                                <label class="control-label">Upload Custom Logo</label>
+                                <div class="logo-upload-zone" id="logoUploadZone">
+                                    <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden>
+                                    <i class="fa-solid fa-cloud-arrow-up logo-upload-icon"></i>
+                                    <p class="upload-hint">Click or drag logo image (PNG/SVG recommended)</p>
+                                </div>
+                                <div class="logo-preview-box hidden" id="logoPreviewBox">
+                                    <img id="logoPreviewImg" src="" alt="Logo Preview">
+                                    <button class="btn-icon-danger" id="btnRemoveLogo" title="Remove logo">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="control-row-2col">
+                                <div class="control-group">
+                                    <label for="wmLogoScale" class="control-label">Scale (<span id="logoScaleVal">25</span>%)</label>
+                                    <input type="range" id="wmLogoScale" min="5" max="100" value="25">
+                                </div>
+                                <div class="control-group">
+                                    <label for="wmLogoOpacity" class="control-label">Opacity (<span id="logoOpacityVal">90</span>%)</label>
+                                    <input type="range" id="wmLogoOpacity" min="10" max="100" value="90">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="wmLogoRotation" class="control-label">Rotation Angle (<span id="logoRotationVal">0</span>°)</label>
+                                <input type="range" id="wmLogoRotation" min="-180" max="180" value="0">
+                            </div>
+                        </div>
+
+                        <!-- COMMON POSITION & ALIGNMENT PANEL -->
+                        <div class="panel-section">
+                            <div class="section-title"><i class="fa-solid fa-arrows-to-dot"></i> Position & Placement</div>
+                            
+                            <!-- 9 Preset Grid -->
+                            <div class="position-presets-grid">
+                                <button class="pos-preset-btn" data-pos="top-left" title="Top Left"><i class="fa-solid fa-arrow-up-left"></i> TL</button>
+                                <button class="pos-preset-btn" data-pos="top-center" title="Top Center"><i class="fa-solid fa-arrow-up"></i> TC</button>
+                                <button class="pos-preset-btn" data-pos="top-right" title="Top Right"><i class="fa-solid fa-arrow-up-right"></i> TR</button>
+                                <button class="pos-preset-btn" data-pos="center-left" title="Center Left"><i class="fa-solid fa-arrow-left"></i> CL</button>
+                                <button class="pos-preset-btn active" data-pos="center" title="Center"><i class="fa-solid fa-crosshairs"></i> CTR</button>
+                                <button class="pos-preset-btn" data-pos="center-right" title="Center Right"><i class="fa-solid fa-arrow-right"></i> CR</button>
+                                <button class="pos-preset-btn" data-pos="bottom-left" title="Bottom Left"><i class="fa-solid fa-arrow-down-left"></i> BL</button>
+                                <button class="pos-preset-btn" data-pos="bottom-center" title="Bottom Center"><i class="fa-solid fa-arrow-down"></i> BC</button>
+                                <button class="pos-preset-btn" data-pos="bottom-right" title="Bottom Right"><i class="fa-solid fa-arrow-down-right"></i> BR</button>
+                            </div>
+
+                            <div class="control-row-2col">
+                                <div class="control-group">
+                                    <label for="wmOffsetX" class="control-label">X Offset (<span id="offsetXVal">50</span>%)</label>
+                                    <input type="range" id="wmOffsetX" min="0" max="100" value="50">
+                                </div>
+                                <div class="control-group">
+                                    <label for="wmOffsetY" class="control-label">Y Offset (<span id="offsetYVal">50</span>%)</label>
+                                    <input type="range" id="wmOffsetY" min="0" max="100" value="50">
+                                </div>
+                            </div>
+                            <p class="field-hint"><i class="fa-solid fa-hand-pointer"></i> Tip: Drag the watermark handle directly on the video preview!</p>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 2: KEYFRAME EXTRACTOR CONTROLS -->
+                    <div class="tab-pane" id="tab-extractor">
+                        <div class="panel-section">
+                            <div class="section-title"><i class="fa-solid fa-stopwatch"></i> Snapshot Mode</div>
+                            
+                            <div class="control-group">
+                                <label for="extractMode" class="control-label">Extraction Method</label>
+                                <select id="extractMode" class="select-input">
+                                    <option value="interval" selected>Time Interval (Every N Seconds)</option>
+                                    <option value="count">Fixed Frame Count (Spread evenly)</option>
+                                    <option value="manual">Manual Snapshot Only</option>
+                                </select>
+                            </div>
+
+                            <!-- Interval setting -->
+                            <div class="control-group" id="groupInterval">
+                                <label for="extractInterval" class="control-label">Interval Step</label>
+                                <div class="input-unit-group">
+                                    <select id="extractInterval" class="select-input">
+                                        <option value="0.5">Every 0.5 Seconds (High Density)</option>
+                                        <option value="1" selected>Every 1.0 Second (Standard)</option>
+                                        <option value="2">Every 2.0 Seconds</option>
+                                        <option value="5">Every 5.0 Seconds</option>
+                                        <option value="10">Every 10.0 Seconds</option>
+                                        <option value="custom">Custom Seconds...</option>
+                                    </select>
+                                </div>
+                                <div class="custom-interval-wrapper hidden" id="customIntervalWrapper">
+                                    <input type="number" id="customIntervalInput" class="number-input" min="0.1" max="60" step="0.1" value="3.0">
+                                    <span>sec</span>
+                                </div>
+                            </div>
+
+                            <!-- Count setting -->
+                            <div class="control-group hidden" id="groupCount">
+                                <label for="extractCount" class="control-label">Total Keyframe Snapshots</label>
+                                <input type="range" id="extractCount" min="3" max="60" value="12">
+                                <div class="range-labels">
+                                    <span>3 frames</span>
+                                    <span id="frameCountVal">12 frames</span>
+                                    <span>60 frames</span>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="extractFormat" class="control-label">Snapshot Quality & Format</label>
+                                <select id="extractFormat" class="select-input">
+                                    <option value="image/png" selected>PNG (Lossless High Quality)</option>
+                                    <option value="image/jpeg">JPEG (High Quality 90%)</option>
+                                    <option value="image/webp">WebP (Optimized)</option>
+                                </select>
+                            </div>
+
+                            <div class="action-buttons-stack">
+                                <button class="btn btn-primary btn-block" id="btnStartBatchExtract">
+                                    <i class="fa-solid fa-bolt"></i> Extract All Keyframes Now
+                                </button>
+                                <button class="btn btn-secondary btn-block" id="btnSingleSnapshot">
+                                    <i class="fa-solid fa-camera"></i> Capture Single Snapshot
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Keyframe Gallery Quick Stats -->
+                        <div class="panel-section">
+                            <div class="section-title"><i class="fa-solid fa-list-check"></i> Gallery Stats</div>
+                            <div class="stats-mini-grid">
+                                <div class="mini-stat-card">
+                                    <span class="stat-num" id="statFrameCount">0</span>
+                                    <span class="stat-lbl">Keyframes</span>
+                                </div>
+                                <div class="mini-stat-card">
+                                    <span class="stat-num" id="statSelectedCount">0</span>
+                                    <span class="stat-lbl">Selected</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: PIPELINE & EXPORT CONTROLS -->
+                    <div class="tab-pane" id="tab-export">
+                        
+                        <!-- ENCODING PRESETS -->
+                        <div class="panel-section">
+                            <div class="section-title"><i class="fa-solid fa-gears"></i> WASM Encoder Configuration</div>
+                            
+                            <div class="control-group">
+                                <label for="encoderCodec" class="control-label">Target Video Codec</label>
+                                <select id="encoderCodec" class="select-input">
+                                    <option value="video/webm;codecs=vp9" selected>VP9 / WebM (High Efficiency)</option>
+                                    <option value="video/webm;codecs=vp8">VP8 / WebM (High Compatibility)</option>
+                                    <option value="video/webm;codecs=h264">H.264 / WebM (Accelerated)</option>
+                                    <option value="video/webm">Default WebM Container</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="encoderBitrate" class="control-label">Target Bitrate</label>
+                                <select id="encoderBitrate" class="select-input">
+                                    <option value="2000000">2.0 Mbps (Fast / Low Size)</option>
+                                    <option value="5000000" selected>5.0 Mbps (Balanced HD)</option>
+                                    <option value="10000000">10.0 Mbps (Production Ultra HD)</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="simdThreads" class="control-label">WASM Threads (<span id="simdThreadsVal">8</span> Threads)</label>
+                                <input type="range" id="simdThreads" min="1" max="16" value="8">
+                            </div>
+                        </div>
+
+                        <!-- EXPORT ACTIONS -->
+                        <div class="panel-section">
+                            <div class="section-title"><i class="fa-solid fa-file-export"></i> Render & Export Video</div>
+                            <p class="panel-desc">Encodes the live watermarked canvas stream using WebAssembly local pipeline into a downloadable WebM video file.</p>
+                            
+                            <button class="btn btn-emerald btn-block btn-lg" id="btnExportVideo">
+                                <i class="fa-solid fa-circle-play"></i> Render & Download Watermarked Video
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+            <!-- Main Central Workspace: Video Player Canvas & Extractor Output -->
+            <section class="main-content-area">
+                
+                <!-- Video Uploader & Source Selector Bar -->
+                <div class="video-source-bar">
+                    <div class="source-dropzone" id="videoDropzone">
+                        <input type="file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime" hidden>
+                        <div class="dropzone-content">
+                            <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                            <div class="drop-text">
+                                <strong>Drop video file here</strong> or <span>click to browse</span> (MP4, WebM, MOV)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="source-or-divider">OR</div>
+                    
+                    <div class="sample-picker">
+                        <button class="btn btn-purple" id="btnGenerateDemoVideo">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Synthetic Demo Video
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Video Viewport & Canvas Overlay Box -->
+                <div class="viewport-card">
+                    <div class="viewport-header">
+                        <div class="viewport-title">
+                            <i class="fa-solid fa-display"></i> Live Watermark Preview Workspace
+                            <span class="badge badge-tech" id="resBadge">1280x720 • 30 FPS</span>
+                        </div>
+                        <div class="viewport-controls">
+                            <button class="btn-toggle-view active" id="btnModeLive" title="Live Watermark Canvas View">
+                                <i class="fa-solid fa-eye"></i> Live Watermarked
+                            </button>
+                            <button class="btn-toggle-view" id="btnModeSplit" title="Side-by-Side Comparison View">
+                                <i class="fa-solid fa-columns"></i> Split Compare
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="canvas-stage-wrapper" id="canvasStageWrapper">
+                        <!-- Hidden Source Video Element -->
+                        <video id="sourceVideo" crossorigin="anonymous" playsinline loop style="display: none;"></video>
+                        
+                        <!-- Main Rendering Canvas -->
+                        <canvas id="outputCanvas" width="1280" height="720"></canvas>
+                        
+                        <!-- Canvas Overlay Guidance Layer (For dragging watermark) -->
+                        <div class="watermark-drag-overlay" id="dragOverlay">
+                            <div class="drag-handle" id="dragHandle" title="Drag to reposition watermark">
+                                <i class="fa-solid fa-up-down-left-right"></i>
+                            </div>
+                        </div>
+
+                        <!-- Processing Indicator Overlay -->
+                        <div class="processing-overlay hidden" id="processingOverlay">
+                            <div class="spinner-box">
+                                <div class="tech-spinner"></div>
+                                <h3 id="processingTitle">Processing Video Frames...</h3>
+                                <p id="processingSubtitle">Running WASM Keyframe Extraction Pipeline</p>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" id="processingProgressBar" style="width: 0%;"></div>
+                                </div>
+                                <span class="progress-percent-text" id="processingPercentText">0% (0 / 0 frames)</span>
+                                <button class="btn btn-sm btn-danger margin-top-sm" id="btnCancelProcessing">Cancel Process</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Interactive Video Control Bar -->
+                    <div class="video-control-bar">
+                        <div class="play-pause-group">
+                            <button class="btn-icon-lg" id="btnPlayPause" title="Play/Pause">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                            <button class="btn-icon" id="btnStop" title="Stop & Reset">
+                                <i class="fa-solid fa-stop"></i>
+                            </button>
+                        </div>
+
+                        <div class="time-display">
+                            <span id="currentTimeText">00:00.00</span> / <span id="durationText">00:00.00</span>
+                        </div>
+
+                        <div class="timeline-seek-wrapper">
+                            <input type="range" id="seekSlider" min="0" max="100" value="0" step="0.01">
+                            <div class="timeline-buffered" id="bufferedBar"></div>
+                        </div>
+
+                        <div class="volume-group">
+                            <button class="btn-icon" id="btnMute" title="Mute/Unmute">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                            <input type="range" id="volumeSlider" min="0" max="1" value="1" step="0.05">
+                        </div>
+
+                        <button class="btn-icon" id="btnFullscreen" title="Fullscreen Preview">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KEYFRAME EXTRACTOR GALLERY SECTION -->
+                <div class="gallery-section">
+                    <div class="gallery-header">
+                        <div class="gallery-title">
+                            <i class="fa-solid fa-photo-film"></i> Extracted Keyframes Gallery
+                            <span class="count-badge" id="galleryCountBadge">0 Frames</span>
+                        </div>
+
+                        <div class="gallery-actions">
+                            <button class="btn btn-sm btn-secondary" id="btnSelectAllFrames">
+                                <i class="fa-solid fa-square-check"></i> Select All
+                            </button>
+                            <button class="btn btn-sm btn-secondary" id="btnDeselectAllFrames">
+                                <i class="fa-regular fa-square"></i> Deselect
+                            </button>
+                            <button class="btn btn-sm btn-danger" id="btnDeleteSelectedFrames">
+                                <i class="fa-solid fa-trash"></i> Delete Selected
+                            </button>
+                            <button class="btn btn-sm btn-cyan" id="btnDownloadSelectedZip">
+                                <i class="fa-solid fa-file-zipper"></i> Download Selected (ZIP)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Thumbnails Grid -->
+                    <div class="thumbnails-grid" id="thumbnailsGrid">
+                        <!-- Empty Placeholder State -->
+                        <div class="empty-gallery-state" id="emptyGalleryState">
+                            <i class="fa-solid fa-layer-group empty-icon"></i>
+                            <h3>No Keyframes Extracted Yet</h3>
+                            <p>Select snapshot settings in the left sidebar and click <strong>"Extract All Keyframes Now"</strong> or press <strong>"Capture Single Snapshot"</strong> while playing video.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WASM PIPELINE TELEMETRY & CONSOLE LOGS -->
+                <div class="telemetry-section">
+                    <div class="telemetry-header">
+                        <div class="telemetry-title">
+                            <i class="fa-solid fa-microchip"></i> WASM Performance Telemetry & Console
+                        </div>
+                        <div class="telemetry-badges">
+                            <span class="tech-tag"><i class="fa-solid fa-gauge-high"></i> FPS: <strong id="telemetryFps">60.0</strong></span>
+                            <span class="tech-tag"><i class="fa-solid fa-memory"></i> Heap Memory: <strong id="telemetryMemory">128 MB</strong></span>
+                            <span class="tech-tag"><i class="fa-solid fa-bolt"></i> Acceleration: <strong>WebAssembly SIMD</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-content">
+                        <!-- Real-time metrics grid -->
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon cyan"><i class="fa-solid fa-stopwatch-20"></i></div>
+                                <div class="metric-info">
+                                    <span class="metric-val" id="metricFrameTime">1.4 ms</span>
+                                    <span class="metric-lbl">Frame Processing Time</span>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon purple"><i class="fa-solid fa-network-wired"></i></div>
+                                <div class="metric-info">
+                                    <span class="metric-val" id="metricThroughput">48.5 MB/s</span>
+                                    <span class="metric-lbl">WASM Pipeline Bandwidth</span>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon emerald"><i class="fa-solid fa-compact-disc"></i></div>
+                                <div class="metric-info">
+                                    <span class="metric-val" id="metricFramesProcessed">0</span>
+                                    <span class="metric-lbl">Total Rendered Frames</span>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon amber"><i class="fa-solid fa-sliders"></i></div>
+                                <div class="metric-info">
+                                    <span class="metric-val" id="metricActiveThreads">8 Threads</span>
+                                    <span class="metric-lbl">PThread Parallel Workers</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Log Terminal -->
+                        <div class="log-terminal-wrapper">
+                            <div class="terminal-bar">
+                                <span><i class="fa-solid fa-terminal"></i> WASM Pipeline Log Stream</span>
+                                <button class="btn-text-sm" id="btnClearLogs">Clear Log</button>
+                            </div>
+                            <div class="terminal-log-body" id="terminalLogBody">
+                                <div class="log-line info"><span class="log-time">[00:00:00]</span> [WASM-INIT] WebAssembly Video Processing Module initialised. SIMD support verified.</div>
+                                <div class="log-line info"><span class="log-time">[00:00:00]</span> [PIPELINE] Ready for local video stream processing and keyframe extraction.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="app-footer">
+            <p>© 2026 WASM VideoCraft Studio • Powered by WebAssembly, HTML5 Canvas & MediaRecorder API • 100% Privacy-Preserving Client-Side Processing</p>
+        </footer>
+    </div>
+
+    <!-- IMAGE PREVIEW MODAL -->
+    <div class="modal-backdrop hidden" id="imageModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modalTitle"><i class="fa-solid fa-image"></i> Keyframe Snapshot Preview</h3>
+                <button class="modal-close-btn" id="btnCloseModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-image-wrapper">
+                    <img id="modalPreviewImage" src="" alt="Keyframe Full View">
+                </div>
+                <div class="modal-meta-bar">
+                    <span class="meta-item"><i class="fa-solid fa-clock"></i> Timestamp: <strong id="modalTimestamp">00:00.00</strong></span>
+                    <span class="meta-item"><i class="fa-solid fa-expand"></i> Dimensions: <strong id="modalDimensions">1280x720</strong></span>
+                    <span class="meta-item"><i class="fa-solid fa-file-image"></i> Format: <strong id="modalFormat">PNG</strong></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnModalCopy"><i class="fa-solid fa-copy"></i> Copy to Clipboard</button>
+                <button class="btn btn-cyan" id="btnModalDownload"><i class="fa-solid fa-download"></i> Download PNG</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER GUIDE MODAL -->
+    <div class="modal-backdrop hidden" id="helpModal">
+        <div class="modal-container help-modal-width">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-book-open"></i> User Guide & Capabilities</h3>
+                <button class="modal-close-btn" id="btnCloseHelpModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body help-body">
+                <h4><i class="fa-solid fa-bolt text-cyan"></i> About WebAssembly VideoCraft Studio</h4>
+                <p>This studio provides powerful, privacy-first video editing directly inside your web browser using HTML5 Canvas and simulated WebAssembly acceleration. No video is ever uploaded to any server!</p>
+                
+                <hr class="help-divider">
+
+                <h4><i class="fa-solid fa-stamp text-purple"></i> Key Features:</h4>
+                <ul>
+                    <li><strong>Custom Watermarking:</strong> Overlay text with customizable fonts, stroke, shadow, colors, rotation, and opacity, or upload your own PNG/SVG logo.</li>
+                    <li><strong>Direct Drag & Position:</strong> Move watermark directly on the video canvas preview.</li>
+                    <li><strong>Keyframe Extractor:</strong> Automatically extract keyframes at configurable time intervals (0.5s, 1s, 2s, 5s, 10s) or fixed total frame counts.</li>
+                    <li><strong>ZIP Export:</strong> Download all or selected extracted keyframe thumbnails in a single ZIP file without external servers.</li>
+                    <li><strong>Local Encoding Pipeline:</strong> Encode watermarked video directly into WebM/VP9 using browser MediaRecorder.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btnGotIt">Got It, Let's Create!</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="video-watermark.js"></script>
+</body>
+</html>
