@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGPU Compute Shader & Parallel Matrix Benchmark Tool</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="cyber-scanlines"></div>
+    <div class="cyber-grid-bg"></div>
+
+    <div class="app-container">
+        <!-- TOP HEADER NAVBAR -->
+        <header class="cyber-header">
+            <div class="logo-zone">
+                <div class="cyber-logo-icon">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>CYBER-GPU // <span class="highlight">WGSL COMPUTE BENCHMARK</span></h1>
+                    <p class="subtitle">Parallel Matrix Multiplication & Compute Shader Diagnostics</p>
+                </div>
+            </div>
+
+            <div class="system-status-panel">
+                <div class="status-badge" id="webgpu-status-badge">
+                    <span class="status-led led-yellow"></span>
+                    <span class="status-text" id="status-text">INITIALIZING ENGINE...</span>
+                </div>
+                <div class="hardware-info" id="hardware-info">
+                    <i class="fa-solid fa-server"></i> <span id="gpu-adapter-name">Detecting Hardware...</span>
+                </div>
+                <button id="sound-toggle-btn" class="cyber-btn-icon" title="Toggle Cyber Audio SFX">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- HARDWARE CAPABILITIES TICKER -->
+        <div class="telemetry-bar">
+            <div class="telemetry-item">
+                <span class="label">ENGINE:</span>
+                <span class="value" id="active-backend-val">WebGPU Native</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="label">MAX WORKGROUP SIZE:</span>
+                <span class="value" id="max-workgroup-val">256, 256, 64</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="label">MAX STORAGE BUFFER:</span>
+                <span class="value" id="max-buffer-val">2 GiB</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="label">TIMESTAMP QUERIES:</span>
+                <span class="value" id="timestamp-supported-val">Supported</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="label">THEORETICAL PEAK:</span>
+                <span class="value highlight-green" id="peak-flops-val">Calculating...</span>
+            </div>
+        </div>
+
+        <!-- MAIN DASHBOARD GRID -->
+        <main class="dashboard-grid">
+            
+            <!-- LEFT COLUMN: CONTROLS & WGSL EDITOR -->
+            <section class="dashboard-col left-col">
+                
+                <!-- CONTROL CENTER CARD -->
+                <div class="cyber-card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-sliders"></i>
+                        <h2>BENCHMARK CONTROL CENTER</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Matrix Size Slider -->
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Matrix Dimensions (N &times; N):</span>
+                                <span class="badge-value" id="matrix-size-display">512 &times; 512</span>
+                            </div>
+                            <input type="range" id="matrix-size-slider" min="64" max="2048" step="64" value="512" class="cyber-slider">
+                            <div class="slider-ticks">
+                                <span>64</span>
+                                <span>256</span>
+                                <span>512</span>
+                                <span>1024</span>
+                                <span>1536</span>
+                                <span>2048</span>
+                            </div>
+                        </div>
+
+                        <div class="matrix-stats-grid">
+                            <div class="mini-stat">
+                                <span class="mini-label">Total Floating Ops</span>
+                                <span class="mini-value" id="total-flops-display">0.268 GFLOP</span>
+                            </div>
+                            <div class="mini-stat">
+                                <span class="mini-label">Memory Footprint</span>
+                                <span class="mini-value" id="total-mem-display">3.14 MB</span>
+                            </div>
+                        </div>
+
+                        <!-- Engine Selector -->
+                        <div class="control-group margin-top">
+                            <label class="control-label">Execution Target Mode:</label>
+                            <div class="engine-buttons-grid">
+                                <button class="engine-btn active" data-engine="webgpu">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span>WebGPU WGSL</span>
+                                </button>
+                                <button class="engine-btn" data-engine="webgl2">
+                                    <i class="fa-solid fa-cube"></i>
+                                    <span>WebGL 2.0</span>
+                                </button>
+                                <button class="engine-btn" data-engine="cpu">
+                                    <i class="fa-solid fa-microchip"></i>
+                                    <span>CPU JS Loop</span>
+                                </button>
+                                <button class="engine-btn battle-btn" data-engine="battle">
+                                    <i class="fa-solid fa-swords"></i>
+                                    <span>BATTLE ALL</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Generator Options -->
+                        <div class="control-row">
+                            <div class="control-subgroup">
+                                <label for="matrix-preset-select">Matrix Data Pattern:</label>
+                                <select id="matrix-preset-select" class="cyber-select">
+                                    <option value="random">Random Uniform [0, 1]</option>
+                                    <option value="identity">Identity Matrix I_N</option>
+                                    <option value="sequential">Sequential Ramp</option>
+                                    <option value="orthogonal">Orthogonal Test</option>
+                                </select>
+                            </div>
+
+                            <div class="control-subgroup">
+                                <label for="warmup-runs-check" class="checkbox-label">
+                                    <input type="checkbox" id="warmup-runs-check" checked>
+                                    <span>GPU Warmup Run</span>
+                                </label>
+                                <label for="verify-result-check" class="checkbox-label">
+                                    <input type="checkbox" id="verify-result-check" checked>
+                                    <span>CPU Cross-Verify</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Action Button -->
+                        <button id="run-benchmark-btn" class="cyber-btn primary-btn btn-glow">
+                            <i class="fa-solid fa-play"></i>
+                            <span>EXECUTE PARALLEL BENCHMARK</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- WGSL SHADER EDITOR CARD -->
+                <div class="cyber-card flex-grow">
+                    <div class="card-header space-between">
+                        <div class="title-group">
+                            <i class="fa-solid fa-code"></i>
+                            <h2>WGSL COMPUTE SHADER EDITOR</h2>
+                        </div>
+                        <div class="preset-selector-wrapper">
+                            <select id="shader-preset-select" class="cyber-select-sm">
+                                <option value="tiled">⚡ Tiled Workgroup Shared Memory (Fastest)</option>
+                                <option value="naive">🐢 Naive Parallel Compute (Basic)</option>
+                                <option value="vec4">🚀 Vectorized vec4<f32> Processing</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body editor-body">
+                        <div class="code-editor-container">
+                            <div class="line-numbers" id="line-numbers">1</div>
+                            <textarea id="wgsl-code-input" class="wgsl-textarea" spellcheck="false" autocomplete="off"></textarea>
+                        </div>
+
+                        <div class="editor-actions">
+                            <button id="compile-wgsl-btn" class="cyber-btn-sm secondary-btn">
+                                <i class="fa-solid fa-gears"></i> Compile & Validate Pipeline
+                            </button>
+                            <span class="compiler-status" id="compiler-status-msg">
+                                <i class="fa-solid fa-circle-check text-green"></i> Pipeline Ready
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- RIGHT COLUMN: DIAGNOSTICS, VISUALIZER & CHARTS -->
+            <section class="dashboard-col right-col">
+
+                <!-- REALTIME TELEMETRY METRICS CARD -->
+                <div class="cyber-card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <h2>BENCHMARK TELEMETRY HUD</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="metrics-grid">
+                            <div class="metric-card cyan-glow">
+                                <div class="metric-icon"><i class="fa-solid fa-stopwatch"></i></div>
+                                <div class="metric-data">
+                                    <span class="metric-label">Execution Time</span>
+                                    <div class="metric-value"><span id="hud-time-val">0.00</span> <small>ms</small></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card magenta-glow">
+                                <div class="metric-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                                <div class="metric-data">
+                                    <span class="metric-label">Compute Throughput</span>
+                                    <div class="metric-value"><span id="hud-gflops-val">0.00</span> <small>GFLOPS</small></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card yellow-glow">
+                                <div class="metric-icon"><i class="fa-solid fa-network-wired"></i></div>
+                                <div class="metric-data">
+                                    <span class="metric-label">Memory Bandwidth</span>
+                                    <div class="metric-value"><span id="hud-bandwidth-val">0.00</span> <small>MB/s</small></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card green-glow">
+                                <div class="metric-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                                <div class="metric-data">
+                                    <span class="metric-label">Verification Error</span>
+                                    <div class="metric-value status-text-sm" id="hud-verify-val">UNTESTED</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GPU BUFFER & BIND GROUP VISUALIZER -->
+                <div class="cyber-card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-sitemap"></i>
+                        <h2>GPU STORAGE BUFFER & WORKGROUP VISUALIZER</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="visualizer-container">
+                            
+                            <!-- BIND GROUP PIPELINE DIAGRAM -->
+                            <div class="bind-group-diagram">
+                                <div class="diagram-title"><i class="fa-solid fa-link"></i> Bind Group 0 Layout</div>
+                                <div class="buffer-nodes">
+                                    <div class="buffer-node node-a">
+                                        <div class="node-header">Binding @0</div>
+                                        <div class="node-title">Buffer A (Matrix A)</div>
+                                        <div class="node-desc" id="buf-a-size">read_only storage</div>
+                                    </div>
+                                    <div class="buffer-node node-b">
+                                        <div class="node-header">Binding @1</div>
+                                        <div class="node-title">Buffer B (Matrix B)</div>
+                                        <div class="node-desc" id="buf-b-size">read_only storage</div>
+                                    </div>
+                                    <div class="buffer-node node-c">
+                                        <div class="node-header">Binding @2</div>
+                                        <div class="node-title">Buffer C (Output)</div>
+                                        <div class="node-desc" id="buf-c-size">storage, read_write</div>
+                                    </div>
+                                    <div class="buffer-node node-u">
+                                        <div class="node-header">Binding @3</div>
+                                        <div class="node-title">Uniform Buffer</div>
+                                        <div class="node-desc" id="buf-u-size">struct Uniforms</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- WORKGROUP GRID DISPATCH VISUALIZER -->
+                            <div class="workgroup-visualizer">
+                                <div class="diagram-title"><i class="fa-solid fa-border-all"></i> 2D Workgroup Grid Dispatch</div>
+                                <div class="grid-dispatch-box">
+                                    <div class="workgroup-grid" id="workgroup-grid-cells">
+                                        <!-- Dynamically populated 4x4 sample workgroup representation -->
+                                    </div>
+                                </div>
+                                <div class="grid-meta" id="grid-dispatch-info">
+                                    Dispatched: 32 &times; 32 Workgroups (1024 total) | Threads: 262,144
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMPARISON CHARTS TABBED CARD -->
+                <div class="cyber-card flex-grow">
+                    <div class="card-header space-between">
+                        <div class="title-group">
+                            <i class="fa-solid fa-chart-column"></i>
+                            <h2>PERFORMANCE ANALYTICS</h2>
+                        </div>
+                        <div class="chart-tabs">
+                            <button class="chart-tab active" data-chart="bar">Engine Comparison</button>
+                            <button class="chart-tab" data-chart="scaling">N &times; N Scaling Curve</button>
+                            <button class="chart-tab" data-chart="heatmap">Output Matrix Heatmap</button>
+                        </div>
+                    </div>
+                    <div class="card-body chart-body">
+                        
+                        <!-- CHART 1: BAR COMPARISON -->
+                        <div class="chart-view active" id="view-bar-chart">
+                            <canvas id="benchmarkBarChart"></canvas>
+                        </div>
+
+                        <!-- CHART 2: SCALING LINE CHART -->
+                        <div class="chart-view" id="view-scaling-chart">
+                            <canvas id="benchmarkScalingChart"></canvas>
+                        </div>
+
+                        <!-- VIEW 3: HEATMAP CANVAS -->
+                        <div class="chart-view" id="view-heatmap-chart">
+                            <div class="heatmap-wrapper">
+                                <div class="heatmap-info">
+                                    <span>Sample Result Matrix Slice (Top 64 &times; 64 Sub-matrix):</span>
+                                    <span id="heatmap-minmax">Min: 0.0 | Max: 0.0</span>
+                                </div>
+                                <canvas id="matrixHeatmapCanvas" width="400" height="400"></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- BOTTOM CONSOLE / LOG TERMINAL -->
+        <footer class="cyber-console-card">
+            <div class="console-header">
+                <div class="console-title">
+                    <i class="fa-solid fa-terminal"></i>
+                    <span>SYSTEM EXECUTION LOG & COMPUTE TERMINAL</span>
+                </div>
+                <div class="console-controls">
+                    <button id="clear-console-btn" class="cyber-btn-xs"><i class="fa-solid fa-trash-can"></i> Clear Log</button>
+                </div>
+            </div>
+            <div class="console-body" id="cyber-console-log">
+                <div class="log-entry system"><span class="timestamp">[00:00:00]</span> Cyber-GPU Compute Shader Environment Initialized. Ready for dispatches.</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MAIN SCRIPT -->
+    <script src="webgpu-benchmark.js"></script>
+</body>
+</html>
