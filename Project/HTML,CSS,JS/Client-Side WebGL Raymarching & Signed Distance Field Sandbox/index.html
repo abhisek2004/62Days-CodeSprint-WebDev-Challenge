@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebGL Raymarching & SDF Sandbox</title>
+  <meta name="description" content="A real-time WebGL raymarching and Signed Distance Field (SDF) shader sandbox with live GLSL editor, CSG boolean operations, ambient occlusion, soft shadows, and reflections.">
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- WebGL Rendering Canvas -->
+    <canvas id="gl-canvas"></canvas>
+
+    <!-- Top Navigation Header -->
+    <header class="top-nav glass-panel">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>SDF Raymarcher</h1>
+          <span class="badge">WebGL 2.0</span>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <!-- Preset Selector -->
+        <div class="control-group inline">
+          <label for="preset-select">Preset:</label>
+          <select id="preset-select" class="custom-select">
+            <option value="csg_studio">CSG Geometry Studio</option>
+            <option value="morphing_orbs">Morphing Plasma Orbs</option>
+            <option value="infinite_grid">Infinite Cyber City Grid</option>
+            <option value="reflection_temple">Reflective Gold & Glass</option>
+            <option value="twisted_sculpture">Twisted Carved Torus</option>
+          </select>
+        </div>
+
+        <!-- Animation Controls -->
+        <div class="btn-group">
+          <button id="btn-play-pause" class="btn btn-icon" title="Play/Pause Animation (Space)">
+            <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button id="btn-reset-time" class="btn btn-icon" title="Reset Time">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+        </div>
+
+        <div class="stats-badge" id="stats-badge">
+          <span id="fps-counter">60 FPS</span>
+          <span class="divider">•</span>
+          <span id="frame-time">16.6ms</span>
+        </div>
+
+        <button id="btn-screenshot" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Export PNG
+        </button>
+
+        <button id="btn-toggle-panels" class="btn btn-secondary btn-icon" title="Toggle UI Panels">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Split -->
+    <main id="workspace">
+      <!-- Left Panel: GLSL Live Code Editor -->
+      <section id="editor-panel" class="panel glass-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            <span>GLSL Raymarching Shader</span>
+          </div>
+          <div class="editor-status" id="editor-status">
+            <span class="status-indicator success"></span>
+            <span class="status-text">Compiled</span>
+          </div>
+        </div>
+
+        <!-- Quick Code Snippet Inserter Toolbar -->
+        <div class="snippet-toolbar">
+          <span class="toolbar-label">Insert:</span>
+          <button class="btn-chip" data-snippet="sphere">Sphere</button>
+          <button class="btn-chip" data-snippet="box">Box</button>
+          <button class="btn-chip" data-snippet="torus">Torus</button>
+          <button class="btn-chip" data-snippet="cylinder">Cylinder</button>
+          <button class="btn-chip" data-snippet="union">Smooth Union</button>
+          <button class="btn-chip" data-snippet="subtraction">Subtract</button>
+          <button class="btn-chip" data-snippet="intersection">Intersect</button>
+          <button class="btn-chip" data-snippet="twist">Twist</button>
+          <button class="btn-chip" data-snippet="repeat">Repeat</button>
+        </div>
+
+        <!-- Code Editor Area -->
+        <div class="editor-container">
+          <div class="line-numbers" id="line-numbers">1</div>
+          <textarea id="code-editor" spellcheck="false" placeholder="Write GLSL Fragment Shader code here..."></textarea>
+        </div>
+
+        <!-- Compiler Error Console -->
+        <div id="error-console" class="error-console hidden">
+          <div class="error-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>GLSL Shader Compilation Errors</span>
+          </div>
+          <pre id="error-log"></pre>
+        </div>
+
+        <div class="panel-footer">
+          <div class="checkbox-group">
+            <input type="checkbox" id="chk-auto-compile" checked>
+            <label for="chk-auto-compile">Auto-Compile</label>
+          </div>
+          <div class="action-buttons">
+            <button id="btn-reset-code" class="btn btn-secondary btn-sm">Reset Default</button>
+            <button id="btn-compile" class="btn btn-accent btn-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Compile (Ctrl+Enter)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Parameters & Rendering Controls -->
+      <section id="controls-panel" class="panel glass-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Shader Controls</span>
+          </div>
+        </div>
+
+        <div class="panel-content scrollable">
+          <!-- Accordion 1: Raymarching Engine & Shading -->
+          <details open class="control-accordion">
+            <summary class="accordion-title">
+              <span>Raymarching & Shading</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div class="accordion-body">
+              <!-- Feature Toggles -->
+              <div class="toggle-grid">
+                <label class="toggle-item">
+                  <input type="checkbox" id="chk-ao" checked>
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Ambient Occlusion</span>
+                </label>
+
+                <label class="toggle-item">
+                  <input type="checkbox" id="chk-shadows" checked>
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Soft Shadows</span>
+                </label>
+
+                <label class="toggle-item">
+                  <input type="checkbox" id="chk-reflections" checked>
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Reflections</span>
+                </label>
+
+                <label class="toggle-item">
+                  <input type="checkbox" id="chk-orbit-light">
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Orbiting Light</span>
+                </label>
+              </div>
+
+              <!-- Raymarching Precision -->
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-max-steps">Max March Steps</label>
+                  <span id="val-max-steps">128</span>
+                </div>
+                <input type="range" id="rng-max-steps" min="32" max="256" step="16" value="128">
+              </div>
+
+              <!-- AO Intensity -->
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-ao-intensity">AO Intensity</label>
+                  <span id="val-ao-intensity">1.0</span>
+                </div>
+                <input type="range" id="rng-ao-intensity" min="0.0" max="2.0" step="0.05" value="1.0">
+              </div>
+
+              <!-- Shadow Softness -->
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-shadow-k">Shadow Softness (k)</label>
+                  <span id="val-shadow-k">16.0</span>
+                </div>
+                <input type="range" id="rng-shadow-k" min="4.0" max="64.0" step="2.0" value="16.0">
+              </div>
+
+              <!-- Reflection Strength -->
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-reflection-str">Reflection Metalness</label>
+                  <span id="val-reflection-str">0.6</span>
+                </div>
+                <input type="range" id="rng-reflection-str" min="0.0" max="1.0" step="0.05" value="0.6">
+              </div>
+            </div>
+          </details>
+
+          <!-- Accordion 2: Lighting & Environment -->
+          <details open class="control-accordion">
+            <summary class="accordion-title">
+              <span>Lighting & Environment</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div class="accordion-body">
+              <div class="color-picker-group">
+                <div class="color-item">
+                  <label for="clr-light">Light Color</label>
+                  <input type="color" id="clr-light" value="#ffffff">
+                </div>
+                <div class="color-item">
+                  <label for="clr-bg1">Sky Top Color</label>
+                  <input type="color" id="clr-bg1" value="#101428">
+                </div>
+                <div class="color-item">
+                  <label for="clr-bg2">Sky Bottom Color</label>
+                  <input type="color" id="clr-bg2" value="#05060b">
+                </div>
+              </div>
+
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-light-intensity">Light Intensity</label>
+                  <span id="val-light-intensity">1.2</span>
+                </div>
+                <input type="range" id="rng-light-intensity" min="0.1" max="3.0" step="0.1" value="1.2">
+              </div>
+
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-light-x">Light Pos X</label>
+                  <span id="val-light-x">3.0</span>
+                </div>
+                <input type="range" id="rng-light-x" min="-10.0" max="10.0" step="0.5" value="3.0">
+              </div>
+
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-light-y">Light Pos Y</label>
+                  <span id="val-light-y">5.0</span>
+                </div>
+                <input type="range" id="rng-light-y" min="0.5" max="15.0" step="0.5" value="5.0">
+              </div>
+
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-light-z">Light Pos Z</label>
+                  <span id="val-light-z">3.0</span>
+                </div>
+                <input type="range" id="rng-light-z" min="-10.0" max="10.0" step="0.5" value="3.0">
+              </div>
+            </div>
+          </details>
+
+          <!-- Accordion 3: Camera & Render Settings -->
+          <details open class="control-accordion">
+            <summary class="accordion-title">
+              <span>Camera & Render Target</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div class="accordion-body">
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-fov">Field of View (FOV)</label>
+                  <span id="val-fov">60°</span>
+                </div>
+                <input type="range" id="rng-fov" min="30" max="110" step="1" value="60">
+              </div>
+
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="rng-time-speed">Animation Speed</label>
+                  <span id="val-time-speed">1.0x</span>
+                </div>
+                <input type="range" id="rng-time-speed" min="0.0" max="3.0" step="0.1" value="1.0">
+              </div>
+
+              <div class="control-group">
+                <label for="sel-render-scale">Render Resolution Scale:</label>
+                <select id="sel-render-scale" class="custom-select">
+                  <option value="0.5">0.5x (Fast Performance)</option>
+                  <option value="0.75">0.75x (Balanced)</option>
+                  <option value="1.0" selected>1.0x (Native Retina)</option>
+                  <option value="1.5">1.5x (High Detail)</option>
+                  <option value="2.0">2.0x (Ultra Quality)</option>
+                </select>
+              </div>
+
+              <div class="btn-row">
+                <button id="btn-reset-cam" class="btn btn-secondary btn-full">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                  Reset Orbit Camera
+                </button>
+              </div>
+            </div>
+          </details>
+
+          <!-- Accordion 4: Quick Reference & Controls Guide -->
+          <details class="control-accordion">
+            <summary class="accordion-title">
+              <span>Interactive Controls Guide</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div class="accordion-body guide-box">
+              <ul>
+                <li><strong>Left Click + Drag:</strong> Orbit camera around scene</li>
+                <li><strong>Right Click + Drag:</strong> Pan camera target</li>
+                <li><strong>Mouse Scroll:</strong> Zoom camera in/out</li>
+                <li><strong>Spacebar:</strong> Play/Pause animation time</li>
+                <li><strong>Ctrl + Enter:</strong> Recompile GLSL shader</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <!-- Floating Camera Help HUD Overlay -->
+    <div id="camera-hud" class="camera-hud glass-panel">
+      <span>Cam: Orbit (Drag: Rotate, Scroll: Zoom)</span>
+    </div>
+  </div>
+
+  <script src="raymarching-sandbox.js"></script>
+</body>
+</html>
