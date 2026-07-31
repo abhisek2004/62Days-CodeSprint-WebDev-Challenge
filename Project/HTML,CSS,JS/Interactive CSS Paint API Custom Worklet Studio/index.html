@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Houdini Paint Worklet Studio</title>
+  <meta name="description" content="Interactive CSS Paint API Houdini developer playground with live JS code editor, dynamic custom property controls, preset worklets, and universal Canvas API fallback engine.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- App Header Bar -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div>
+        <div class="brand-title">CSS Houdini Worklet Studio</div>
+        <div class="brand-subtitle">Interactive Paint API Playground & Fallback Engine</div>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div id="engineStatusBadge" class="badge badge-fallback">
+        <span class="status-dot"></span>
+        <span id="engineStatusText">Checking Engine Support...</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="btnFormat" class="btn" title="Format JavaScript Code"><i class="fa-solid fa-code"></i> Format</button>
+      <button id="btnReset" class="btn" title="Reset to Preset Default"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+      <button id="btnExport" class="btn btn-emerald" title="Export Production Files"><i class="fa-solid fa-download"></i> Export Worklet</button>
+    </div>
+  </header>
+
+  <!-- Main Studio Layout Grid -->
+  <main class="studio-layout">
+
+    <!-- Left Editor Panel -->
+    <section class="editor-section">
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="tab-editor"><i class="fa-solid fa-terminal"></i> JS Worklet Editor</button>
+        <button class="tab-btn" data-tab="tab-inspector"><i class="fa-solid fa-sliders"></i> CSS Properties Inspector</button>
+      </div>
+
+      <!-- Preset Bar -->
+      <div class="preset-selector-bar">
+        <div class="select-wrapper">
+          <label for="presetSelect"><i class="fa-solid fa-cubes"></i> Preset Library:</label>
+          <select id="presetSelect" class="form-select">
+            <option value="polka-dots">Polka Dots (Dots & Orbs Grid)</option>
+            <option value="ripple-wave">Ripple Wave (Sine Curves)</option>
+            <option value="checkerboard">Checkerboard (Rotated Tiles)</option>
+            <option value="voronoi-diagram">Voronoi Diagram (Generative Cells)</option>
+            <option value="geometric-grid">Geometric Grid (Blueprint Iso)</option>
+            <option value="cyber-matrix">Cyber Matrix (Digital Rain)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tab 1: JS Editor -->
+      <div id="tab-editor" class="tab-content active">
+        <div class="editor-wrapper">
+          <div id="lineNumbers" class="line-numbers">1</div>
+          <textarea id="codeEditor" class="code-textarea" spellcheck="false" autocomplete="off" placeholder="Write CSS Paint Worklet JS here..."></textarea>
+        </div>
+        <div class="editor-toolbar">
+          <div id="compilerStatus" class="compiler-status status-ok">
+            <i class="fa-solid fa-circle-check"></i> <span id="compilerStatusText">Worklet Compiled Successfully</span>
+          </div>
+          <div class="tool-group">
+            <button id="btnInsertProp" class="btn btn-sm" title="Insert properties.get()"><i class="fa-solid fa-plus"></i> Add prop.get()</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: CSS Custom Properties Inspector -->
+      <div id="tab-inspector" class="tab-content">
+        <div class="inspector-container">
+          <div class="inspector-section">
+            <div class="section-title">
+              <span>Dynamic Custom Properties (`inputProperties`)</span>
+              <button id="btnAddCustomProp" class="btn btn-sm"><i class="fa-solid fa-plus"></i> Add Control</button>
+            </div>
+            <div id="propGrid" class="prop-grid">
+              <!-- Dynamically populated via JS based on worklet code -->
+            </div>
+          </div>
+
+          <div class="inspector-section">
+            <div class="section-title">
+              <span>Generated Element CSS Snippet</span>
+              <button id="btnCopyCssSnippet" class="btn btn-sm"><i class="fa-solid fa-copy"></i> Copy CSS</button>
+            </div>
+            <pre id="cssSnippetOutput" class="css-output-box"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Live Preview Panel -->
+    <section class="preview-section">
+      <div class="preview-toolbar">
+        <div class="tool-group">
+          <span class="tool-label"><i class="fa-solid fa-expand"></i> Container Size:</span>
+          <select id="sizeSelect" class="form-select" style="width: auto;">
+            <option value="card">Card (520x380)</option>
+            <option value="banner">Banner (740x240)</option>
+            <option value="square">Square (400x400)</option>
+            <option value="hero">Hero Box (620x460)</option>
+          </select>
+        </div>
+
+        <div class="tool-group">
+          <span class="tool-label"><i class="fa-solid fa-mountain-sun"></i> Backdrop:</span>
+          <button class="btn btn-sm bg-btn active" data-bg="grid-dark" title="Dark Grid"><i class="fa-solid fa-grip"></i></button>
+          <button class="btn btn-sm bg-btn" data-bg="grid-checker" title="Transparent Checker"><i class="fa-solid fa-chess-board"></i></button>
+          <button class="btn btn-sm bg-btn" data-bg="light-mode" title="Light Mode"><i class="fa-solid fa-sun"></i></button>
+        </div>
+
+        <div class="tool-group">
+          <button id="btnToggleAnim" class="btn btn-sm" title="Animate --pattern-angle automatically">
+            <i class="fa-solid fa-play"></i> Animate
+          </button>
+          <button id="btnToggleEngine" class="btn btn-sm" title="Force Canvas Fallback Engine vs Native Paint API">
+            <i class="fa-solid fa-microchip"></i> Engine: <span id="engineModeLabel">Auto</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Preview Canvas Container -->
+      <div id="previewStage" class="preview-stage-container bg-grid-dark">
+        <div id="paintPreviewBox" class="paint-preview-box">
+          
+          <!-- Canvas layer for cross-browser fallback rendering -->
+          <canvas id="fallbackCanvas" class="fallback-canvas"></canvas>
+
+          <!-- Mock Interactive Card UI inside preview box -->
+          <div class="preview-card-content">
+            <span class="preview-card-tag"><i class="fa-solid fa-atom"></i> CSS Houdini Powered</span>
+            <h3 class="preview-card-title">Live Canvas Background</h3>
+            <p class="preview-card-desc">This background is procedurally rendered using JavaScript CSS Paint API or standard 2D Canvas Fallback Engine.</p>
+            <button class="preview-card-btn"><i class="fa-solid fa-rocket"></i> Explore Worklet</button>
+          </div>
+
+          <div class="preview-footer-info">
+            <div><i class="fa-solid fa-ruler-combined"></i> <span id="dimLabel">520 x 380 px</span></div>
+            <div><i class="fa-solid fa-paint-roller"></i> Worklet: <strong id="workletNameLabel">custom-pattern</strong></div>
+            <div><i class="fa-solid fa-bolt"></i> <span id="fpsLabel">60 FPS</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-export"></i> Export Worklet Package</h3>
+        <button id="btnCloseModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-muted);">Download the production JavaScript paint worklet or copy the integration code for your project.</p>
+        
+        <div>
+          <strong style="font-size: 0.85rem; color: var(--text-bright);">1. Worklet JavaScript File (`paint-worklet.js`)</strong>
+          <div style="margin-top: 8px;">
+            <button id="btnDownloadJs" class="btn btn-primary"><i class="fa-solid fa-download"></i> Download paint-worklet.js</button>
+            <button id="btnCopyJs" class="btn"><i class="fa-solid fa-copy"></i> Copy JS Code</button>
+          </div>
+        </div>
+
+        <div>
+          <strong style="font-size: 0.85rem; color: var(--text-bright);">2. HTML Integration Script</strong>
+          <div class="code-snippet-block" id="jsIntegrationSnippet">
+&lt;script&gt;
+  if ('paintWorklet' in CSS) {
+    CSS.paintWorklet.addModule('paint-worklet.js');
+  }
+&lt;/script&gt;</div>
+        </div>
+
+        <div>
+          <strong style="font-size: 0.85rem; color: var(--text-bright);">3. CSS Rule with Houdini Paint Call</strong>
+          <div class="code-snippet-block" id="cssRuleSnippet">
+.custom-paint-element {
+  background-image: paint(custom-pattern);
+}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Studio Core JavaScript Engine -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // --- Preset Worklet Code Templates ---
+      const PRESETS = {
+        'polka-dots': `class PolkaDotsPainter {
+  static get inputProperties() {
+    return [
+      '--pattern-color',
+      '--pattern-accent',
+      '--pattern-bg',
+      '--pattern-density',
+      '--pattern-scale',
+      '--pattern-angle'
+    ];
+  }
+
+  paint(ctx, geom, properties) {
+    const color = properties.get('--pattern-color')?.toString().trim() || '#6366f1';
+    const accent = properties.get('--pattern-accent')?.toString().trim() || '#a855f7';
+    const bg = properties.get('--pattern-bg')?.toString().trim() || '#0f172a';
+    const density = parseFloat(properties.get('--pattern-density')) || 32;
+    const scale = parseFloat(properties.get('--pattern-scale')) || 14;
+    const angleDeg = parseFloat(properties.get('--pattern-angle')) || 45;
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, geom.width, geom.height);
+
+    ctx.save();
+    ctx.translate(geom.width / 2, geom.height / 2);
+    ctx.rotate((angleDeg * Math.PI) / 180);
+    ctx.translate(-geom.width, -geom.height);
+
+    const step = Math.max(8, density);
+    const radius = Math.max(1, scale / 2);
+    const w = geom.width * 2.5;
+    const h = geom.height * 2.5;
+
+    let col = 0;
+    for (let x = 0; x < w; x += step) {
+      let row = 0;
+      for (let y = 0; y < h; y += step) {
+        ctx.fillStyle = (col + row) % 2 === 0 ? color : accent;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        row++;
+      }
+      col++;
+    }
+    ctx.restore();
+  }
+}
+
+registerPaint('custom-pattern', PolkaDotsPainter);`,
+
+        'ripple-wave': `class RippleWavePainter {
+  static get inputProperties() {
+    return [
+      '--pattern-color',
+      '--pattern-accent',
+      '--pattern-bg',
+      '--pattern-density',
+      '--pattern-scale',
+      '--pattern-angle'
+    ];
+  }
+
+  paint(ctx, geom, properties) {
+    const color = properties.get('--pattern-color')?.toString().trim() || '#06b6d4';
+    const accent = properties.get('--pattern-accent')?.toString().trim() || '#3b82f6';
+    const bg = properties.get('--pattern-bg')?.toString().trim() || '#0a0e17';
+    const density = parseFloat(properties.get('--pattern-density')) || 24;
+    const scale = parseFloat(properties.get('--pattern-scale')) || 45;
+    const angle = parseFloat(properties.get('--pattern-angle')) || 0;
+
+    const grad = ctx.createLinearGradient(0, 0, geom.width, geom.height);
+    grad.addColorStop(0, bg);
+    grad.addColorStop(1, '#020617');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, geom.width, geom.height);
+
+    ctx.lineWidth = 3;
+    const lines = Math.ceil(geom.height / density) + 8;
+    const stepX = 12;
+
+    for (let i = -4; i < lines; i++) {
+      const yBase = i * density;
+      ctx.beginPath();
+      ctx.strokeStyle = i % 2 === 0 ? color : accent;
+      
+      for (let x = 0; x <= geom.width + stepX; x += stepX) {
+        const wave = Math.sin((x / scale) + (i * 0.4) + (angle * Math.PI / 180)) * 16;
+        const y = yBase + wave;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+}
+
+registerPaint('custom-pattern', RippleWavePainter);`,
+
+        'checkerboard': `class CheckerboardPainter {
+  static get inputProperties() {
+    return [
+      '--pattern-color',
+      '--pattern-accent',
+      '--pattern-bg',
+      '--pattern-scale',
+      '--pattern-angle'
+    ];
+  }
+
+  paint(ctx, geom, properties) {
+    const color1 = properties.get('--pattern-color')?.toString().trim() || '#1e293b';
+    const color2 = properties.get('--pattern-accent')?.toString().trim() || '#334155';
+    const bg = properties.get('--pattern-bg')?.toString().trim() || '#0f172a';
+    const size = Math.max(10, parseFloat(properties.get('--pattern-scale')) || 40);
+    const angle = parseFloat(properties.get('--pattern-angle')) || 15;
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, geom.width, geom.height);
+
+    ctx.save();
+    ctx.translate(geom.width / 2, geom.height / 2);
+    ctx.rotate((angle * Math.PI) / 180);
+    ctx.translate(-geom.width * 1.5, -geom.height * 1.5);
+
+    const cols = Math.ceil((geom.width * 3) / size);
+    const rows = Math.ceil((geom.height * 3) / size);
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        ctx.fillStyle = (r + c) % 2 === 0 ? color1 : color2;
+        ctx.fillRect(c * size, r * size, size, size);
+      }
+    }
+    ctx.restore();
+  }
+}
+
+registerPaint('custom-pattern', CheckerboardPainter);`,
+
+        'voronoi-diagram': `class VoronoiDiagramPainter {
+  static get inputProperties() {
+    return [
+      '--pattern-color',
+      '--pattern-accent',
+      '--pattern-bg',
+      '--pattern-density',
+      '--pattern-scale',
+      '--pattern-angle'
+    ];
+  }
+
+  paint(ctx, geom, properties) {
+    const color1 = properties.get('--pattern-color')?.toString().trim() || '#8b5cf6';
+    const color2 = properties.get('--pattern-accent')?.toString().trim() || '#ec4899';
+    const bg = properties.get('--pattern-bg')?.toString().trim() || '#090d16';
+    const numPoints = Math.max(8, Math.min(60, Math.floor(parseFloat(properties.get('--pattern-density')) || 30)));
+    const reach = parseFloat(properties.get('--pattern-scale')) || 150;
+    const seed = parseFloat(properties.get('--pattern-angle')) || 42;
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, geom.width, geom.height);
+
+    function lcg(s) {
+      const x = Math.sin(s) * 10000;
+      return x - Math.floor(x);
+    }
+
+    let s = seed;
+    const points = [];
+    const colorList = [color1, color2, '#06b6d4', '#10b981', '#f59e0b'];
+    
+    for (let i = 0; i < numPoints; i++) {
+      points.push({
+        x: lcg(s++) * geom.width,
+        y: lcg(s++) * geom.height,
+        color: colorList[Math.floor(lcg(s++) * colorList.length)],
+        r: 3 + lcg(s++) * 5
+      });
+    }
+
+    ctx.lineWidth = 1.2;
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        const dx = points[i].x - points[j].x;
+        const dy = points[i].y - points[j].y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < reach) {
+          const alpha = 1 - dist / reach;
+          ctx.strokeStyle = points[i].color;
+          ctx.globalAlpha = alpha * 0.65;
+          ctx.beginPath();
+          ctx.moveTo(points[i].x, points[i].y);
+          ctx.lineTo(points[j].x, points[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.globalAlpha = 1.0;
+
+    points.forEach(p => {
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+  }
+}
+
+registerPaint('custom-pattern', VoronoiDiagramPainter);`,
+
+        'geometric-grid': `class GeometricGridPainter {
+  static get inputProperties() {
+    return [
+      '--pattern-color',
+      '--pattern-accent',
+      '--pattern-bg',
+      '--pattern-density',
+      '--pattern-scale',
+      '--pattern-angle'
+    ];
+  }
+
+  paint(ctx, geom, properties) {
+    const color = properties.get('--pattern-color')?.toString().trim() || '#10b981';
+    const accent = properties.get('--pattern-accent')?.toString().trim() || '#f59e0b';
+    const bg = properties.get('--pattern-bg')?.toString().trim() || '#022c22';
+    const cellSize = Math.max(15, parseFloat(properties.get('--pattern-density')) || 40);
+    const angle = parseFloat(properties.get('--pattern-angle')) || 0;
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, geom.width, geom.height);
+
+    ctx.save();
+    ctx.translate(geom.width / 2, geom.height / 2);
+    ctx.rotate((angle * Math.PI) / 180);
+    ctx.translate(-geom.width, -geom.height);
+
+    const w = geom.width * 2;
+    const h = geom.height * 2;
+
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 1;
+
+    for (let x = 0; x <= w; x += cellSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= h; y += cellSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    ctx.globalAlpha = 0.8;
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 1.5;
+
+    for (let x = 0; x <= w; x += cellSize) {
+      for (let y = 0; y <= h; y += cellSize) {
+        ctx.strokeRect(x, y, cellSize, cellSize);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + cellSize, y + cellSize);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+}
+
+registerPaint('custom-pattern', GeometricGridPainter);`,
+
+        'cyber-matrix': `class CyberMatrixPainter {
+  static get inputProperties() {
+    return [
+      '--pattern-color',
+      '--pattern-accent',
+      '--pattern-bg',
+      '--pattern-density',
+      '--pattern-scale',
+      '--pattern-angle'
+    ];
+  }
+
+  paint(ctx, geom, properties) {
+    const color = properties.get('--pattern-color')?.toString().trim() || '#22c55e';
+    const accent = properties.get('--pattern-accent')?.toString().trim() || '#86efac';
+    const bg = properties.get('--pattern-bg')?.toString().trim() || '#052e16';
+    const fontSz = Math.max(10, parseFloat(properties.get('--pattern-density')) || 16);
+    const seed = parseFloat(properties.get('--pattern-angle')) || 12;
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, geom.width, geom.height);
+
+    ctx.font = \`\${fontSz}px monospace\`;
+    const chars = '0123456789ABCDEFGHJKLMNOPQRSTUVWXYZ<>/{}[]+=*#';
+    
+    const cols = Math.floor(geom.width / fontSz);
+    const rows = Math.floor(geom.height / fontSz);
+
+    function rand(s) {
+      const x = Math.sin(s) * 43758.5453;
+      return x - Math.floor(x);
+    }
+
+    let s = seed;
+    for (let c = 0; c < cols; c++) {
+      const colHead = Math.floor(rand(s++) * rows);
+      const trailLen = Math.floor(4 + rand(s++) * 12);
+      
+      for (let r = 0; r < rows; r++) {
+        const char = chars[Math.floor(rand(s++) * chars.length)];
+        const dist = (r - colHead + rows) % rows;
+
+        if (dist === 0) {
+          ctx.fillStyle = accent;
+          ctx.fillText(char, c * fontSz, r * fontSz);
+        } else if (dist < trailLen) {
+          const alpha = 1 - (dist / trailLen);
+          ctx.fillStyle = color;
+          ctx.globalAlpha = alpha;
+          ctx.fillText(char, c * fontSz, r * fontSz);
+          ctx.globalAlpha = 1.0;
+        }
+      }
+    }
+  }
+}
+
+registerPaint('custom-pattern', CyberMatrixPainter);`
+      };
+
+      // Default Custom Property State Values
+      const currentPropValues = {
+        '--pattern-color': '#6366f1',
+        '--pattern-accent': '#a855f7',
+        '--pattern-bg': '#0f172a',
+        '--pattern-density': '32',
+        '--pattern-scale': '14',
+        '--pattern-angle': '45'
+      };
+
+      // DOM Elements
+      const codeEditor = document.getElementById('codeEditor');
+      const lineNumbers = document.getElementById('lineNumbers');
+      const compilerStatus = document.getElementById('compilerStatus');
+      const compilerStatusText = document.getElementById('compilerStatusText');
+      const presetSelect = document.getElementById('presetSelect');
+      const propGrid = document.getElementById('propGrid');
+      const cssSnippetOutput = document.getElementById('cssSnippetOutput');
+      const previewStage = document.getElementById('previewStage');
+      const paintPreviewBox = document.getElementById('paintPreviewBox');
+      const fallbackCanvas = document.getElementById('fallbackCanvas');
+      const sizeSelect = document.getElementById('sizeSelect');
+      const engineStatusBadge = document.getElementById('engineStatusBadge');
+      const engineStatusText = document.getElementById('engineStatusText');
+      const btnToggleAnim = document.getElementById('btnToggleAnim');
+      const btnToggleEngine = document.getElementById('btnToggleEngine');
+      const engineModeLabel = document.getElementById('engineModeLabel');
+      const dimLabel = document.getElementById('dimLabel');
+
+      let currentBlobUrl = null;
+      let activeWorkletClass = null;
+      let isNativeHoudiniSupported = 'paintWorklet' in CSS;
+      let isForceFallback = false;
+      let isAnimRunning = false;
+      let animFrameId = null;
+
+      // Update Engine Badge
+      function updateEngineBadge() {
+        if (isNativeHoudiniSupported && !isForceFallback) {
+          engineStatusBadge.className = 'badge badge-houdini';
+          engineStatusText.textContent = 'CSS Houdini: Native Engine';
+          engineModeLabel.textContent = 'Native';
+        } else {
+          engineStatusBadge.className = 'badge badge-fallback';
+          engineStatusText.textContent = 'Engine: Canvas API Fallback';
+          engineModeLabel.textContent = 'Fallback';
+        }
+      }
+      updateEngineBadge();
+
+      // Sync Line Numbers
+      function updateLineNumbers() {
+        const lines = codeEditor.value.split('\n').length;
+        lineNumbers.innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
+      }
+
+      codeEditor.addEventListener('input', () => {
+        updateLineNumbers();
+        compileAndApplyWorklet();
+      });
+
+      codeEditor.addEventListener('scroll', () => {
+        lineNumbers.scrollTop = codeEditor.scrollTop;
+      });
+
+      // Tab Switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+      });
+
+      // Preset Loading
+      function loadPreset(name) {
+        if (PRESETS[name]) {
+          codeEditor.value = PRESETS[name];
+          updateLineNumbers();
+          compileAndApplyWorklet();
+        }
+      }
+
+      presetSelect.addEventListener('change', (e) => {
+        loadPreset(e.target.value);
+      });
+
+      // Extract inputProperties from code via regex/evaluation
+      function extractInputProperties(code) {
+        const match = code.match(/inputProperties\s*\(\)\s*\{[\s\S]*?return\s*\[([\s\S]*?)\];/);
+        if (!match) return ['--pattern-color', '--pattern-bg', '--pattern-density', '--pattern-scale', '--pattern-angle'];
+        
+        const rawPropsStr = match[1];
+        const props = rawPropsStr.match(/['"](--[\w-]+)['"]/g);
+        if (props) {
+          return props.map(p => p.replace(/['"]/g, ''));
+        }
+        return ['--pattern-color', '--pattern-bg', '--pattern-density', '--pattern-scale', '--pattern-angle'];
+      }
+
+      // Rebuild Inspector UI
+      function renderInspectorControls(propList) {
+        propGrid.innerHTML = '';
+        
+        propList.forEach(prop => {
+          if (!(prop in currentPropValues)) {
+            currentPropValues[prop] = prop.includes('color') || prop.includes('bg') || prop.includes('accent') ? '#6366f1' : '30';
+          }
+
+          const val = currentPropValues[prop];
+          const isColor = prop.includes('color') || prop.includes('bg') || prop.includes('accent');
+          
+          const card = document.createElement('div');
+          card.className = 'prop-card';
+          
+          if (isColor) {
+            card.innerHTML = `
+              <div class="prop-header">
+                <span class="prop-name">${prop}</span>
+                <span class="prop-value-badge" id="badge-${prop}">${val}</span>
+              </div>
+              <div class="prop-control">
+                <input type="color" class="color-picker-input" value="${val.startsWith('#') ? val : '#6366f1'}" data-prop="${prop}">
+                <input type="text" class="form-select" value="${val}" style="font-family: var(--font-code);" data-prop-text="${prop}">
+              </div>
+            `;
+          } else {
+            const numVal = parseFloat(val) || 30;
+            const maxVal = prop.includes('angle') ? 360 : 200;
+            card.innerHTML = `
+              <div class="prop-header">
+                <span class="prop-name">${prop}</span>
+                <span class="prop-value-badge" id="badge-${prop}">${val}</span>
+              </div>
+              <div class="prop-control">
+                <input type="range" class="range-slider" min="0" max="${maxVal}" value="${numVal}" data-prop="${prop}">
+              </div>
+            `;
+          }
+
+          propGrid.appendChild(card);
+        });
+
+        // Event bindings for controls
+        propGrid.querySelectorAll('input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const prop = e.target.dataset.prop || e.target.dataset.propText;
+            const newVal = e.target.value;
+            currentPropValues[prop] = newVal;
+            
+            const badge = document.getElementById(`badge-${prop}`);
+            if (badge) badge.textContent = newVal;
+
+            // Sync color text if color picker moved
+            if (e.target.type === 'color') {
+              const textInput = propGrid.querySelector(`[data-prop-text="${prop}"]`);
+              if (textInput) textInput.value = newVal;
+            }
+
+            applyCustomPropertiesToPreview();
+            renderFallbackCanvas();
+          });
+        });
+
+        applyCustomPropertiesToPreview();
+        updateCssSnippet();
+      }
+
+      // Apply CSS Variables to Preview Element
+      function applyCustomPropertiesToPreview() {
+        Object.entries(currentPropValues).forEach(([prop, val]) => {
+          paintPreviewBox.style.setProperty(prop, val);
+        });
+        updateCssSnippet();
+      }
+
+      // Update Generated CSS Snippet Output
+      function updateCssSnippet() {
+        let code = `.custom-paint-box {\n  background-image: paint(custom-pattern);\n`;
+        Object.entries(currentPropValues).forEach(([prop, val]) => {
+          code += `  ${prop}: ${val};\n`;
+        });
+        code += `}`;
+        cssSnippetOutput.textContent = code;
+      }
+
+      // Fallback Engine Execution using Sandbox Eval
+      function renderFallbackCanvas() {
+        const ctx = fallbackCanvas.getContext('2d');
+        const rect = paintPreviewBox.getBoundingClientRect();
+        
+        fallbackCanvas.width = rect.width;
+        fallbackCanvas.height = rect.height;
+
+        if (!activeWorkletClass) return;
+
+        try {
+          const painter = new activeWorkletClass();
+          const fakeProperties = {
+            get: (propName) => {
+              const v = currentPropValues[propName] || getComputedStyle(paintPreviewBox).getPropertyValue(propName);
+              return {
+                toString: () => v || ''
+              };
+            }
+          };
+
+          painter.paint(ctx, { width: rect.width, height: rect.height }, fakeProperties);
+        } catch (err) {
+          console.warn('Fallback canvas render error:', err);
+        }
+      }
+
+      // Main Worklet Compilation Engine
+      function compileAndApplyWorklet() {
+        const code = codeEditor.value;
+
+        // 1. Evaluate class for Fallback Canvas Engine
+        try {
+          // Replace registerPaint with internal hook
+          let capturedClass = null;
+          const sandboxRegisterPaint = (name, cls) => {
+            capturedClass = cls;
+          };
+
+          const sandboxedCode = `
+            ${code.replace(/registerPaint\s*\(/g, 'sandboxRegisterPaint(')}
+          `;
+
+          const evalFn = new Function('sandboxRegisterPaint', sandboxedCode);
+          evalFn(sandboxRegisterPaint);
+
+          if (capturedClass) {
+            activeWorkletClass = capturedClass;
+            compilerStatus.className = 'compiler-status status-ok';
+            compilerStatusText.textContent = 'Worklet Compiled Successfully';
+          }
+        } catch (err) {
+          compilerStatus.className = 'compiler-status status-err';
+          compilerStatusText.textContent = `Syntax Error: ${err.message}`;
+          return;
+        }
+
+        // 2. Extract Custom Properties
+        const inputProps = extractInputProperties(code);
+        renderInspectorControls(inputProps);
+
+        // 3. Register Native Houdini Paint Worklet (if supported & native mode)
+        if (isNativeHoudiniSupported && !isForceFallback) {
+          try {
+            if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+            currentBlobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+            CSS.paintWorklet.addModule(currentBlobUrl).then(() => {
+              paintPreviewBox.style.backgroundImage = 'paint(custom-pattern)';
+              fallbackCanvas.style.display = 'none';
+            }).catch(e => {
+              // Fallback to Canvas API
+              paintPreviewBox.style.backgroundImage = 'none';
+              fallbackCanvas.style.display = 'block';
+              renderFallbackCanvas();
+            });
+          } catch (e) {
+            paintPreviewBox.style.backgroundImage = 'none';
+            fallbackCanvas.style.display = 'block';
+            renderFallbackCanvas();
+          }
+        } else {
+          paintPreviewBox.style.backgroundImage = 'none';
+          fallbackCanvas.style.display = 'block';
+          renderFallbackCanvas();
+        }
+      }
+
+      // Responsive Size Selector
+      sizeSelect.addEventListener('change', (e) => {
+        const sizes = {
+          'card': { w: '520px', h: '380px' },
+          'banner': { w: '740px', h: '240px' },
+          'square': { w: '400px', h: '400px' },
+          'hero': { w: '620px', h: '460px' }
+        };
+        const s = sizes[e.target.value];
+        paintPreviewBox.style.width = s.w;
+        paintPreviewBox.style.height = s.h;
+        dimLabel.textContent = `${parseInt(s.w)} x ${parseInt(s.h)} px`;
+        
+        setTimeout(renderFallbackCanvas, 100);
+      });
+
+      // Backdrop Selectors
+      document.querySelectorAll('.bg-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          previewStage.className = `preview-stage-container bg-${btn.dataset.bg}`;
+        });
+      });
+
+      // Toggle Engine Mode (Native vs Fallback)
+      btnToggleEngine.addEventListener('click', () => {
+        isForceFallback = !isForceFallback;
+        updateEngineBadge();
+        compileAndApplyWorklet();
+      });
+
+      // Auto Animation Toggle (--pattern-angle animation loop)
+      btnToggleAnim.addEventListener('click', () => {
+        isAnimRunning = !isAnimRunning;
+        if (isAnimRunning) {
+          btnToggleAnim.classList.add('btn-emerald');
+          btnToggleAnim.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+          let angle = parseFloat(currentPropValues['--pattern-angle']) || 0;
+
+          function animLoop() {
+            if (!isAnimRunning) return;
+            angle = (angle + 1) % 360;
+            currentPropValues['--pattern-angle'] = angle.toString();
+            
+            const badge = document.getElementById('badge---pattern-angle');
+            if (badge) badge.textContent = angle;
+            const slider = propGrid.querySelector('[data-prop="--pattern-angle"]');
+            if (slider) slider.value = angle;
+
+            applyCustomPropertiesToPreview();
+            renderFallbackCanvas();
+
+            animFrameId = requestAnimationFrame(animLoop);
+          }
+          animLoop();
+        } else {
+          btnToggleAnim.classList.remove('btn-emerald');
+          btnToggleAnim.innerHTML = '<i class="fa-solid fa-play"></i> Animate';
+          cancelAnimationFrame(animFrameId);
+        }
+      });
+
+      // Export Modal Logic
+      const exportModal = document.getElementById('exportModal');
+      document.getElementById('btnExport').addEventListener('click', () => {
+        exportModal.classList.add('open');
+      });
+      document.getElementById('btnCloseModal').addEventListener('click', () => {
+        exportModal.classList.remove('open');
+      });
+
+      // Download paint-worklet.js
+      document.getElementById('btnDownloadJs').addEventListener('click', () => {
+        const blob = new Blob([codeEditor.value], { type: 'text/javascript' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'paint-worklet.js';
+        a.click();
+      });
+
+      // Copy Buttons
+      document.getElementById('btnCopyJs').addEventListener('click', () => {
+        navigator.clipboard.writeText(codeEditor.value);
+        alert('Worklet JS copied to clipboard!');
+      });
+
+      document.getElementById('btnCopyCssSnippet').addEventListener('click', () => {
+        navigator.clipboard.writeText(cssSnippetOutput.textContent);
+        alert('CSS snippet copied to clipboard!');
+      });
+
+      document.getElementById('btnFormat').addEventListener('click', () => {
+        // Simple code formatter / indentation cleaner
+        let code = codeEditor.value;
+        codeEditor.value = code.trim();
+        updateLineNumbers();
+      });
+
+      document.getElementById('btnReset').addEventListener('click', () => {
+        loadPreset(presetSelect.value);
+      });
+
+      // Initialize Studio
+      loadPreset('polka-dots');
+      window.addEventListener('resize', renderFallbackCanvas);
+    });
+  </script>
+</body>
+</html>
