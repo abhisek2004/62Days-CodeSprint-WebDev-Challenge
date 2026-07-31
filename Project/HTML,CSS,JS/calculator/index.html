@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧮|Calculator</title>
+    <link rel="stylesheet" href="output.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Akronim&family=Amarante&display=swap" rel="stylesheet">
+</head>
+<body class=" w-screen  flex-col h-screen flex items-center justify-center font-[Akronim] dark:bg-blue-950">
+    <h3 class="text-8xl text-red-500 text-shadow-rose-500 text-shadow-2xs dark:text-white dark:text-shadow-white">Calculator</h3>
+    <div class="cal w-[50vw] h-[70vh] bg-red-600 dark:bg-white drop-shadow-red drop-shadow-xl/50 text-white flex flex-col items-center justify-around ">
+        <div class="res w-[95%] h-[19%] py-1 px-0.5 bg-white dark:bg-blue-950 dark:text-white rounded-sm drop-shadow-xl/50 grid grid-rows-2 gap-y-1 text-red-500 text-shadow-2xs text-shadow-red-500 text-5xl place-content-end">
+            <div class="in1"></div>
+            <div class="out"></div>
+        </div>
+
+                   <!-- down box -->
+        <div class="inp w-[95%] h-[65%] p-3 bg-white dark:bg-blue-950 rounded-sm drop-shadow-xl/50 grid grid-cols-4 grid-rows-5 gap-x-2 gap-y-2 place-content-center ">
+            <button class="btn cl col-span-2 bg-blue-500! dark:bg-emerald-400">C</button>
+            <button class="btn mode rounded-4xl! text-4xl! bg-blue-950 dark:drop-shadow-white! dark:bg-amber-500">🌛</button>
+            <button class="btn  val bg-red-500 dark:bg-white font-sans!">.</button>            
+            <button class="btn val bg-red-500 dark:bg-white ">7</button>
+            <button class="btn val bg-red-500 dark:bg-white ">8</button>
+            <button class="btn val bg-red-500 dark:bg-white ">9</button>
+            <button class="btn val bg-red-500 dark:bg-white ">+</button>
+            <button class="btn val bg-red-500 dark:bg-white ">4</button>
+            <button class="btn val bg-red-500 dark:bg-white ">5</button>
+            <button class="btn val bg-red-500 dark:bg-white ">6</button>
+            <button class="btn val bg-red-500 dark:bg-white ">-</button>
+            <button class="btn val bg-red-500 dark:bg-white ">1</button>
+            <button class="btn val bg-red-500 dark:bg-white ">2</button>
+            <button class="btn val bg-red-500 dark:bg-white ">3</button>
+            <button class="btn font-sans! val bg-red-500 dark:bg-white">*</button>
+            <button class="btn er1 bg-yellow-400! text-3xl!">⌫</button>
+            <button class="btn eq col-span-2 bg-green-500! dark:bg-red-500!">=</button>
+            <button class="btn val bg-red-500 dark:bg-white ">/</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
