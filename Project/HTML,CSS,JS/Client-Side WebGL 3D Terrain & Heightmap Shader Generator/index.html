@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoForge 3D - WebGL Terrain & Heightmap Studio</title>
+  <meta name="description" content="Client-Side WebGL 3D Terrain & Heightmap Shader Generator with procedural noise, dynamic biomes, animated water shaders, and 3D OBJ / Heightmap PNG exporter.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top Bar Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <i class="fa-solid fa-mountain-sun"></i>
+        </div>
+        <div class="brand-text">
+          <h1>GeoForge <span>3D</span></h1>
+          <span class="subtitle">WebGL Terrain & Heightmap Studio</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-export-png" class="btn btn-secondary">
+          <i class="fa-solid fa-file-image"></i>
+          <span>Export Heightmap</span>
+        </button>
+        <button id="btn-export-obj" class="btn btn-secondary">
+          <i class="fa-solid fa-cube"></i>
+          <span>Export 3D OBJ</span>
+        </button>
+        <button id="btn-export-shader" class="btn btn-accent">
+          <i class="fa-solid fa-code"></i>
+          <span>GLSL Shader</span>
+        </button>
+        <div class="divider-v"></div>
+        <button id="btn-toggle-cinema" class="btn btn-icon" title="Toggle Auto-Rotate Cinema Camera">
+          <i class="fa-solid fa-video"></i>
+        </button>
+        <button id="btn-toggle-wireframe" class="btn btn-icon" title="Toggle Mesh Wireframe">
+          <i class="fa-solid fa-border-none"></i>
+        </button>
+        <button id="btn-toggle-sidebar" class="btn btn-icon responsive-only" title="Toggle Settings">
+          <i class="fa-solid fa-sliders"></i>
+        </button>
+      </div>
+
+      <div class="stats-badge">
+        <div class="stat-item">
+          <span class="stat-label">FPS</span>
+          <span id="stat-fps" class="stat-value">60</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Verts</span>
+          <span id="stat-verts" class="stat-value">65.5K</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Res</span>
+          <span id="stat-res" class="stat-value">256²</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="app-workspace">
+      <!-- Left Sidebar - Studio Controls -->
+      <aside id="sidebar-controls" class="sidebar">
+        <!-- Preset Biomes Selector -->
+        <section class="control-group">
+          <div class="group-header">
+            <i class="fa-solid fa-palette"></i>
+            <h2>Biome Presets</h2>
+          </div>
+          <div class="biome-grid">
+            <button class="biome-card active" data-biome="forest">
+              <div class="biome-preview forest-bg"></div>
+              <span>Forest Highlands</span>
+            </button>
+            <button class="biome-card" data-biome="desert">
+              <div class="biome-preview desert-bg"></div>
+              <span>Desert Dunes</span>
+            </button>
+            <button class="biome-card" data-biome="snow">
+              <div class="biome-preview snow-bg"></div>
+              <span>Snow Mountain</span>
+            </button>
+            <button class="biome-card" data-biome="volcanic">
+              <div class="biome-preview volcanic-bg"></div>
+              <span>Volcanic Ridge</span>
+            </button>
+            <button class="biome-card" data-biome="alien">
+              <div class="biome-preview alien-bg"></div>
+              <span>Alien Crystal</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Noise & Heightmap Settings Accordion -->
+        <details class="control-accordion" open>
+          <summary class="accordion-header">
+            <i class="fa-solid fa-network-wired"></i>
+            <span>Procedural Noise & Mesh</span>
+            <i class="fa-solid fa-chevron-down arrow"></i>
+          </summary>
+          <div class="accordion-content">
+            <div class="field-row">
+              <label for="noise-type">Noise Algorithm</label>
+              <select id="noise-type" class="select-input">
+                <option value="fbm">Perlin / fBm (Fractal Brownian)</option>
+                <option value="simplex">Simplex Noise</option>
+                <option value="ridge">Ridged Multifractal</option>
+                <option value="billow">Billow / Turbulence</option>
+              </select>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="noise-seed">Seed</label>
+                <button id="btn-randomize-seed" class="btn-text-icon" title="Randomize Seed">
+                  <i class="fa-solid fa-shuffle"></i>
+                </button>
+              </div>
+              <input type="number" id="noise-seed" value="1337" class="number-input">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-scale">Frequency / Scale</label>
+                <span id="val-scale" class="val-badge">0.015</span>
+              </div>
+              <input type="range" id="slider-scale" min="0.002" max="0.05" step="0.001" value="0.015">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-octaves">Octaves</label>
+                <span id="val-octaves" class="val-badge">6</span>
+              </div>
+              <input type="range" id="slider-octaves" min="1" max="8" step="1" value="6">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-persistence">Persistence (Roughness)</label>
+                <span id="val-persistence" class="val-badge">0.50</span>
+              </div>
+              <input type="range" id="slider-persistence" min="0.1" max="0.9" step="0.02" value="0.5">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-lacunarity">Lacunarity (Detail Step)</label>
+                <span id="val-lacunarity" class="val-badge">2.00</span>
+              </div>
+              <input type="range" id="slider-lacunarity" min="1.2" max="3.5" step="0.1" value="2.0">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-height">Height Amplitude</label>
+                <span id="val-height" class="val-badge">45</span>
+              </div>
+              <input type="range" id="slider-height" min="5" max="120" step="1" value="45">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-resolution">Grid Resolution</label>
+                <span id="val-resolution" class="val-badge">256x256</span>
+              </div>
+              <select id="select-resolution" class="select-input">
+                <option value="64">64 x 64 (Fast)</option>
+                <option value="128">128 x 128 (Balanced)</option>
+                <option value="256" selected>256 x 256 (High Detail)</option>
+                <option value="384">384 x 384 (Ultra Detail)</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
+        <!-- Biome Color & Material Customizer -->
+        <details class="control-accordion" open>
+          <summary class="accordion-header">
+            <i class="fa-solid fa-paintbrush"></i>
+            <span>Biome & Shading Customizer</span>
+            <i class="fa-solid fa-chevron-down arrow"></i>
+          </summary>
+          <div class="accordion-content">
+            <div class="color-picker-grid">
+              <div class="color-item">
+                <label for="color-deep">Deep Valley</label>
+                <input type="color" id="color-deep" value="#1a3b1e">
+              </div>
+              <div class="color-item">
+                <label for="color-mid">Midland</label>
+                <input type="color" id="color-mid" value="#2d6a36">
+              </div>
+              <div class="color-item">
+                <label for="color-slope">Rock Slope</label>
+                <input type="color" id="color-slope" value="#6b655b">
+              </div>
+              <div class="color-item">
+                <label for="color-peak">Peak / Snow</label>
+                <input type="color" id="color-peak" value="#ffffff">
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-slope-factor">Slope Rock Blending</label>
+                <span id="val-slope-factor" class="val-badge">0.65</span>
+              </div>
+              <input type="range" id="slider-slope-factor" min="0.0" max="1.0" step="0.05" value="0.65">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-sun-azimuth">Sun Position (Azimuth)</label>
+                <span id="val-sun-azimuth" class="val-badge">135°</span>
+              </div>
+              <input type="range" id="slider-sun-azimuth" min="0" max="360" step="5" value="135">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-sun-elevation">Sun Elevation</label>
+                <span id="val-sun-elevation" class="val-badge">45°</span>
+              </div>
+              <input type="range" id="slider-sun-elevation" min="5" max="85" step="1" value="45">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="color-sun">Sun Light Color</label>
+              </div>
+              <input type="color" id="color-sun" value="#fff4db" class="color-wide">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-fog-density">Atmospheric Fog Density</label>
+                <span id="val-fog-density" class="val-badge">0.0015</span>
+              </div>
+              <input type="range" id="slider-fog-density" min="0.0" max="0.005" step="0.0001" value="0.0015">
+            </div>
+          </div>
+        </details>
+
+        <!-- Ocean & Water Engine -->
+        <details class="control-accordion" open>
+          <summary class="accordion-header">
+            <i class="fa-solid fa-water"></i>
+            <span>Ocean Water Shader Engine</span>
+            <i class="fa-solid fa-chevron-down arrow"></i>
+          </summary>
+          <div class="accordion-content">
+            <div class="field-row toggle-row">
+              <label for="toggle-water">Enable Ocean Water Plane</label>
+              <input type="checkbox" id="toggle-water" class="toggle-switch" checked>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-water-height">Water Level</label>
+                <span id="val-water-height" class="val-badge">12.0</span>
+              </div>
+              <input type="range" id="slider-water-height" min="-10" max="60" step="0.5" value="12">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="color-water">Water Tint Color</label>
+              </div>
+              <input type="color" id="color-water" value="#0077be" class="color-wide">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-wave-speed">Wave Speed</label>
+                <span id="val-wave-speed" class="val-badge">1.0x</span>
+              </div>
+              <input type="range" id="slider-wave-speed" min="0.1" max="3.0" step="0.1" value="1.0">
+            </div>
+
+            <div class="field-row">
+              <div class="field-label-group">
+                <label for="slider-water-opacity">Water Opacity</label>
+                <span id="val-water-opacity" class="val-badge">0.75</span>
+              </div>
+              <input type="range" id="slider-water-opacity" min="0.2" max="0.95" step="0.05" value="0.75">
+            </div>
+          </div>
+        </details>
+      </aside>
+
+      <!-- Center Interactive WebGL Canvas Viewport -->
+      <section class="canvas-viewport">
+        <!-- 3D WebGL Canvas Container -->
+        <div id="canvas-container">
+          <canvas id="webgl-canvas"></canvas>
+        </div>
+
+        <!-- Floating Viewport Control Overlay -->
+        <div class="viewport-overlay top-left">
+          <div class="btn-group">
+            <button id="cam-preset-orbit" class="btn-chip active" title="Reset Camera Orbit">
+              <i class="fa-solid fa-arrows-rotate"></i> Orbit View
+            </button>
+            <button id="cam-preset-top" class="btn-chip" title="Top Down View">
+              <i class="fa-solid fa-map"></i> Top View
+            </button>
+            <button id="cam-preset-iso" class="btn-chip" title="Isometric View">
+              <i class="fa-solid fa-cube"></i> Isometric
+            </button>
+            <button id="cam-preset-fly" class="btn-chip" title="Low Angle Fly-over View">
+              <i class="fa-solid fa-plane"></i> Horizon
+            </button>
+          </div>
+        </div>
+
+        <div class="viewport-overlay top-right">
+          <div class="btn-group">
+            <button id="mode-textured" class="btn-chip active">Shaded</button>
+            <button id="mode-normals" class="btn-chip">Normals</button>
+            <button id="mode-elevation" class="btn-chip">Height Color</button>
+          </div>
+        </div>
+
+        <!-- Floating PIP 2D Heightmap Canvas Preview -->
+        <div class="pip-heightmap-container">
+          <div class="pip-header">
+            <span>2D Heightmap</span>
+            <div class="pip-actions">
+              <button id="btn-pip-colormap" class="btn-mini" title="Toggle Colormap / Grayscale">
+                <i class="fa-solid fa-swatchbook"></i>
+              </button>
+              <button id="btn-pip-expand" class="btn-mini" title="Download Heightmap PNG">
+                <i class="fa-solid fa-download"></i>
+              </button>
+            </div>
+          </div>
+          <div class="pip-canvas-wrapper">
+            <canvas id="heightmap-2d-canvas" width="200" height="200"></canvas>
+            <div class="pip-crosshair"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal: GLSL Shader Code Viewer -->
+    <div id="modal-shader" class="modal-backdrop">
+      <div class="modal-window">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fa-solid fa-code"></i>
+            <h3>Generated GLSL Shader Code</h3>
+          </div>
+          <button class="modal-close" data-close="modal-shader">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="shader-tabs">
+            <button class="tab-btn active" data-tab="vertex-shader">Vertex Shader (.vert)</button>
+            <button class="tab-btn" data-tab="fragment-shader">Fragment Shader (.frag)</button>
+          </div>
+          <div class="code-container">
+            <pre><code id="code-vertex" class="code-block"></code></pre>
+            <pre><code id="code-fragment" class="code-block hidden"></code></pre>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-copy-code" class="btn btn-secondary">
+            <i class="fa-solid fa-copy"></i> Copy GLSL Code
+          </button>
+          <button class="btn btn-accent" data-close="modal-shader">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: OBJ Export Options -->
+    <div id="modal-obj" class="modal-backdrop">
+      <div class="modal-window modal-sm">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fa-solid fa-cube"></i>
+            <h3>Export 3D OBJ Mesh</h3>
+          </div>
+          <button class="modal-close" data-close="modal-obj">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-row">
+            <label for="export-obj-res">Mesh Resolution</label>
+            <select id="export-obj-res" class="select-input">
+              <option value="current">Current View (Same as Grid)</option>
+              <option value="128">128 x 128 (Medium)</option>
+              <option value="256" selected>256 x 256 (High Detail)</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="export-obj-scale">Vertical Scale Multiplier</label>
+            <input type="number" id="export-obj-scale" value="1.0" step="0.1" min="0.1" max="5.0" class="number-input">
+          </div>
+          <div class="field-row toggle-row">
+            <label for="export-obj-normals">Include Vertex Normals</label>
+            <input type="checkbox" id="export-obj-normals" class="toggle-switch" checked>
+          </div>
+          <div class="field-row toggle-row">
+            <label for="export-obj-uvs">Include UV Coordinates</label>
+            <input type="checkbox" id="export-obj-uvs" class="toggle-switch" checked>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-download-obj" class="btn btn-accent">
+            <i class="fa-solid fa-download"></i> Download .OBJ File
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="terrain-generator.js"></script>
+</body>
+</html>
