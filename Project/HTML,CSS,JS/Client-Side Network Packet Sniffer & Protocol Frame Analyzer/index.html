@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetSniff Studio — Client-Side Packet Sniffer & Frame Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for crisp monospace code & modern UI typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Top Main Navigation & Capture Toolbar -->
+        <header class="app-header">
+            <div class="brand-section">
+                <div class="logo-icon"><i class="fa-solid fa-network-wired"></i></div>
+                <div class="brand-titles">
+                    <h1>NetSniff <span>Studio</span></h1>
+                    <span class="version-tag">v2.5 PRO</span>
+                </div>
+            </div>
+
+            <!-- Capture Control Actions -->
+            <div class="toolbar-controls">
+                <button id="btn-start" class="btn btn-success" title="Start Live Capture">
+                    <i class="fa-solid fa-play"></i> Start Capture
+                </button>
+                <button id="btn-stop" class="btn btn-danger disabled" title="Stop Capture" disabled>
+                    <i class="fa-solid fa-square"></i> Stop
+                </button>
+                <button id="btn-restart" class="btn btn-secondary" title="Restart / Reset Stream">
+                    <i class="fa-solid fa-rotate-right"></i> Restart
+                </button>
+                <button id="btn-clear" class="btn btn-secondary" title="Clear Packet Buffer">
+                    <i class="fa-solid fa-trash-can"></i> Clear
+                </button>
+
+                <div class="divider"></div>
+
+                <!-- Browser Interceptor Toggle -->
+                <div class="interceptor-toggle-box" title="Intercept actual browser fetch() and XHR calls into packet stream">
+                    <span class="toggle-label"><i class="fa-solid fa-globe"></i> Fetch Interceptor</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-fetch-interceptor" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Traffic Generator Button -->
+                <button id="btn-generator-modal" class="btn btn-accent">
+                    <i class="fa-solid fa-bolt"></i> Traffic Generator
+                </button>
+
+                <!-- Sample Presets Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline dropdown-toggle" id="btn-presets">
+                        <i class="fa-solid fa-folder-open"></i> Sample Captures <i class="fa-solid fa-chevron-down ms-1"></i>
+                    </button>
+                    <div class="dropdown-menu" id="presets-menu">
+                        <a class="dropdown-item" data-preset="web-browsing"><i class="fa-solid fa-earth-americas"></i> Web Browsing (HTTP/2 + TLS + DNS)</a>
+                        <a class="dropdown-item" data-preset="websocket-chat"><i class="fa-solid fa-comments"></i> WebSocket Live Chat Stream</a>
+                        <a class="dropdown-item" data-preset="dns-lookup"><i class="fa-solid fa-magnifying-glass-location"></i> DNS Lookup & TLS Handshake</a>
+                        <a class="dropdown-item" data-preset="tcp-handshake"><i class="fa-solid fa-handshake"></i> TCP 3-Way Handshake & Reset</a>
+                    </div>
+                </div>
+
+                <!-- Import / Export Actions -->
+                <button id="btn-export" class="btn btn-outline" title="Export PCAP / JSON">
+                    <i class="fa-solid fa-download"></i> Export
+                </button>
+                <button id="btn-import-trigger" class="btn btn-outline" title="Import JSON / PCAP Capture">
+                    <i class="fa-solid fa-upload"></i> Import
+                </button>
+                <input type="file" id="file-import-input" accept=".json,.pcapjson" style="display:none;">
+            </div>
+
+            <!-- Stats Bar Widgets -->
+            <div class="header-stats">
+                <div class="stat-badge" title="Total Packets Captured">
+                    <span class="stat-label">PACKETS</span>
+                    <span class="stat-value" id="stat-total-packets">0</span>
+                </div>
+                <div class="stat-badge" title="Packets per Second">
+                    <span class="stat-label">RATE</span>
+                    <span class="stat-value" id="stat-pps">0 /s</span>
+                </div>
+                <div class="stat-badge" title="Network Bandwidth">
+                    <span class="stat-label">BANDWIDTH</span>
+                    <span class="stat-value" id="stat-bandwidth">0 KB/s</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="filter-toolbar">
+            <!-- Protocol Filter Badges -->
+            <div class="protocol-filters" id="protocol-filters">
+                <button class="filter-pill active" data-protocol="ALL">ALL</button>
+                <button class="filter-pill pill-http" data-protocol="HTTP">HTTP</button>
+                <button class="filter-pill pill-https" data-protocol="HTTPS">HTTPS / TLS</button>
+                <button class="filter-pill pill-ws" data-protocol="WS">WS</button>
+                <button class="filter-pill pill-dns" data-protocol="DNS">DNS</button>
+                <button class="filter-pill pill-tcp" data-protocol="TCP">TCP</button>
+                <button class="filter-pill pill-udp" data-protocol="UDP">UDP</button>
+                <button class="filter-pill pill-icmp" data-protocol="ICMP">ICMP</button>
+            </div>
+
+            <!-- Search & Wireshark Filter Input -->
+            <div class="search-box-container">
+                <i class="fa-solid fa-filter search-icon"></i>
+                <input type="text" id="filter-input" placeholder="Display Filter (e.g. ip.addr == 192.168.1.10, http, dns, port == 443)..." autocomplete="off">
+                <button id="btn-clear-filter" class="btn-icon" title="Clear Filter"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Table Utility Actions -->
+            <div class="table-utility-controls">
+                <label class="checkbox-container" title="Auto-scroll to bottom as new packets arrive">
+                    <input type="checkbox" id="chk-autoscroll" checked>
+                    <span class="checkmark"></span>
+                    Auto-Scroll
+                </label>
+                <button id="btn-follow-stream" class="btn btn-sm btn-outline disabled" disabled title="Follow Stream of selected packet">
+                    <i class="fa-solid fa-stream"></i> Follow Stream
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Workspace: Split Panes -->
+        <main class="workspace-layout">
+            <!-- Top Pane: Packet List Table -->
+            <section class="pane pane-packet-list" id="pane-list">
+                <div class="table-scroll-container">
+                    <table class="packet-table" id="packet-table">
+                        <thead>
+                            <tr>
+                                <th class="col-no" data-sort="id">No. <i class="fa-solid fa-sort"></i></th>
+                                <th class="col-time" data-sort="time">Time (s) <i class="fa-solid fa-sort"></i></th>
+                                <th class="col-src" data-sort="src">Source <i class="fa-solid fa-sort"></i></th>
+                                <th class="col-dst" data-sort="dst">Destination <i class="fa-solid fa-sort"></i></th>
+                                <th class="col-proto" data-sort="proto">Protocol <i class="fa-solid fa-sort"></i></th>
+                                <th class="col-len" data-sort="len">Length <i class="fa-solid fa-sort"></i></th>
+                                <th class="col-info">Info</th>
+                            </tr>
+                        </thead>
+                        <tbody id="packet-table-body">
+                            <!-- Live Packet Rows populated dynamically -->
+                        </tbody>
+                    </table>
+                    <div id="empty-state" class="empty-state">
+                        <i class="fa-solid fa-satellite-dish pulse-icon"></i>
+                        <h3>Capture Buffer Ready</h3>
+                        <p>Click "Start Capture" or generate traffic to capture live network frames.</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="resizer horizontal-resizer" id="resizer-main"></div>
+
+            <!-- Bottom Split Pane: Packet Details Tree & Hex Viewer -->
+            <section class="pane pane-bottom-split" id="pane-details">
+                <!-- Left Details Inspector Tree -->
+                <div class="inspector-box">
+                    <div class="box-header">
+                        <div class="header-title">
+                            <i class="fa-solid fa-sitemap"></i> Packet Details Inspector
+                        </div>
+                        <div class="selected-packet-summary" id="selected-packet-summary">
+                            No packet selected
+                        </div>
+                    </div>
+                    <div class="tree-container" id="tree-container">
+                        <div class="tree-placeholder">
+                            Select a packet from the table above to view frame headers and payload hierarchy.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="resizer vertical-resizer" id="resizer-bottom"></div>
+
+                <!-- Right Hex & ASCII Viewer -->
+                <div class="hex-box">
+                    <div class="box-header">
+                        <div class="header-title">
+                            <i class="fa-solid fa-code"></i> Packet Hex Dump & Bytes
+                        </div>
+                        <div class="hex-hover-info" id="hex-hover-info">
+                            Offset: - | Byte: - | ASCII: -
+                        </div>
+                    </div>
+                    <div class="hex-viewer-container" id="hex-viewer-container">
+                        <div class="hex-placeholder">
+                            Select a packet to inspect raw bytes and ASCII decoded view.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer Status Bar -->
+        <footer class="app-footer">
+            <div class="status-left">
+                <span class="status-indicator live" id="status-indicator"></span>
+                <span id="status-text">Status: Capture Running</span>
+            </div>
+            <div class="status-center">
+                <span id="display-count-info">Displaying: 0 / 0 packets (100%)</span>
+            </div>
+            <div class="status-right">
+                <span>Profile: Default Developer</span>
+                <span class="ms-3"><i class="fa-solid fa-shield-halved"></i> Client Interceptor Active</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal: Traffic Generator -->
+    <div class="modal-backdrop" id="modal-traffic-generator">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-bolt text-accent"></i> Traffic Generator & Packet Injector</h3>
+                <button class="modal-close" data-close="modal-traffic-generator"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="generator-grid">
+                    <!-- Column 1: Presets & Controls -->
+                    <div class="gen-col">
+                        <h4>Quick Presets</h4>
+                        <div class="preset-buttons">
+                            <button class="btn btn-preset" id="gen-http-get"><i class="fa-solid fa-globe"></i> HTTP GET Burst (JSON API)</button>
+                            <button class="btn btn-preset" id="gen-http-post"><i class="fa-solid fa-paper-plane"></i> HTTP POST Auth Request</button>
+                            <button class="btn btn-preset" id="gen-ws-handshake"><i class="fa-solid fa-plug"></i> WebSocket Handshake + Ping</button>
+                            <button class="btn btn-preset" id="gen-dns-burst"><i class="fa-solid fa-network-wired"></i> DNS Batch Query (A/AAAA/MX)</button>
+                            <button class="btn btn-preset" id="gen-tls-handshake"><i class="fa-solid fa-lock"></i> TLS 1.3 Handshake (ClientHello)</button>
+                            <button class="btn btn-preset" id="gen-tcp-syn"><i class="fa-solid fa-tower-broadcast"></i> TCP SYN Flood / Port Scan</button>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Custom Generator Settings -->
+                    <div class="gen-col">
+                        <h4>Custom Burst Configuration</h4>
+                        <div class="form-group">
+                            <label>Target Protocol</label>
+                            <select id="gen-protocol" class="form-control">
+                                <option value="HTTP">HTTP/1.1 REST API</option>
+                                <option value="HTTPS">HTTPS / TLS 1.3</option>
+                                <option value="WS">WebSocket Frame</option>
+                                <option value="DNS">DNS Query</option>
+                                <option value="TCP">Raw TCP (SYN / ACK / FIN)</option>
+                                <option value="UDP">Raw UDP Datagram</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Packet Count: <span id="val-packet-count">10</span></label>
+                            <input type="range" id="gen-count" min="1" max="100" value="10" class="form-range">
+                        </div>
+                        <div class="form-group">
+                            <label>Burst Speed (Packets / sec): <span id="val-packet-rate">5</span></label>
+                            <input type="range" id="gen-rate" min="1" max="50" value="5" class="form-range">
+                        </div>
+                        <div class="form-group">
+                            <label>Custom Payload / URL</label>
+                            <input type="text" id="gen-custom-payload" class="form-control" placeholder="https://api.doctorapp.internal/v1/patients">
+                        </div>
+                        <button id="btn-execute-burst" class="btn btn-accent w-100 mt-2">
+                            <i class="fa-solid fa-play"></i> Inject Packet Burst
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Follow Stream -->
+    <div class="modal-backdrop" id="modal-follow-stream">
+        <div class="modal-window modal-lg">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-stream text-accent"></i> Follow TCP / HTTP Stream</h3>
+                <button class="modal-close" data-close="modal-follow-stream"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="stream-meta" id="stream-meta-info">
+                    Stream #0 &bull; Node: 192.168.1.45:54321 &hArr; 104.21.32.8:443
+                </div>
+                <div class="stream-content-box" id="stream-content">
+                    <!-- Stream text formatted (Red for client, Blue for server) -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="modal-follow-stream">Close</button>
+                <button class="btn btn-outline" id="btn-copy-stream"><i class="fa-solid fa-copy"></i> Copy Stream</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JS logic -->
+    <script src="packet-sniffer.js"></script>
+</body>
+</html>
