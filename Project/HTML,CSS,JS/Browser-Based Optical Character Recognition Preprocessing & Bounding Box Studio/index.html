@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCR Image Preprocessing & Bounding Box Tagger Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📑 OCR Image Preprocessing & Bounding Box Tagger Studio</h1>
+      <p>Adaptive Thresholding, Otsu Binarization, Deskewing & Canvas Text Region Bounding Box Annotations</p>
+    </header>
+
+    <div class="controls">
+      <button class="btn" onclick="applyPreprocess('otsu')">Apply Otsu Binarization</button>
+      <button class="btn" onclick="applyPreprocess('threshold')">Adaptive Thresholding</button>
+      <button class="btn btn-secondary" onclick="detectBoundingBoxes()">Detect Text Bounding Boxes</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Document Preprocessing Canvas</h3>
+        <div class="canvas-box">
+          <canvas id="ocrCanvas" width="400" height="240"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Detected Text Regions & Export Annotations</h3>
+        <div id="bboxResult" class="bbox-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="ocr-studio.js"></script>
+</body>
+</html>
