@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebGL 3D Fractal Raymarcher</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌌 WebGL 2.0 3D Fractal Raymarcher</h1>
+      <p>Mandelbulb, Quaternion Julia & Menger Sponge 3D Distance Estimator Shaders</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="renderFractal('mandelbulb')">Render 3D Mandelbulb (Power 8)</button>
+      <div id="fractalStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">Raymarching Mandelbulb distance estimator (Max Steps: 128, Detail Threshold: 0.001).</div>
+    </div>
+  </div>
+  <script src="fractal-raymarcher.js"></script>
+</body>
+</html>
