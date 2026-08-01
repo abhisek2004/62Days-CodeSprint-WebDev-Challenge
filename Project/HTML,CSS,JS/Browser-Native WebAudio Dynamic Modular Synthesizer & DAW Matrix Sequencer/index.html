@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebAudio Dynamic Modular Synthesizer & DAW</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎛️ WebAudio Modular Synthesizer & DAW Sequencer</h1>
+      <p>Patch Oscillators, ADSR Envelopes, Filters & 16-Step Matrix Sequencer</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="startSequencer()">Start 16-Step Sequencer (120 BPM)</button>
+      <div id="synthStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">AudioContext running @ 44.1kHz. Oscillators (Sawtooth, Square) patched to Moog Lowpass Filter.</div>
+    </div>
+  </div>
+  <script src="modular-synth.js"></script>
+</body>
+</html>
