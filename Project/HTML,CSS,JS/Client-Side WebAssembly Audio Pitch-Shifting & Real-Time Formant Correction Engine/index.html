@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wasm Audio Pitch-Shifting & Formant Correction</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎶 WebAssembly Phase Vocoder Pitch-Shifter</h1>
+      <p>Independent Pitch Shift (±12 semitones) & Vocal Formant Preservation</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="applyPitchShift(+4)">Pitch Shift +4 Semitones (Formant Corrected)</button>
+      <div id="pitchStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">Phase Vocoder WebAssembly SIMD Node initialized.</div>
+    </div>
+  </div>
+  <script src="audio-pitch-shifter.js"></script>
+</body>
+</html>
