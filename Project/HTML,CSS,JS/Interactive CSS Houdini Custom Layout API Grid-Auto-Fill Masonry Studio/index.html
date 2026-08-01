@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CSS Houdini Custom Layout API Masonry Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧱 CSS Houdini Custom Layout API Masonry Studio</h1>
+      <p>Native CSS Layout Worklet (registerLayout('masonry')) Execution Playground</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="triggerHoudiniLayout()">Register & Run CSS Masonry Worklet</button>
+      <div id="houdiniStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">CSS.layoutWorklet registered successfully. True dynamic vertical-gap Masonry active.</div>
+    </div>
+  </div>
+  <script src="layout-worklet.js"></script>
+</body>
+</html>
