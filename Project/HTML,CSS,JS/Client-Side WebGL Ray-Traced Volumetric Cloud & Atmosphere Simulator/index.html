@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebGL Ray-Traced Volumetric Cloud Simulator</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>☁️ WebGL 2.0 Volumetric Cloud & Atmosphere Simulator</h1>
+      <p>Perlin-Worley 3D Noise Ray-Marching & Rayleigh/Mie Light Scattering Shaders</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="updateSunPosition(17)">Set Time of Day: 5:00 PM Golden Hour Sunset</button>
+      <div id="cloudStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">Raymarching 3D Volumetric Cloud Noise Texture. Mie Scattering Coefficient: 0.0035, Rayleigh: 0.0058.</div>
+    </div>
+  </div>
+  <script src="volumetric-clouds.js"></script>
+</body>
+</html>
