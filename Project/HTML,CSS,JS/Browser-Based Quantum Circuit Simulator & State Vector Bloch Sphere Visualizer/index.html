@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quantum Circuit Simulator & Bloch Sphere</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚛️ Quantum Circuit Simulator & Bloch Sphere</h1>
+      <p>Simulate Qubit Superposition, Hadamard H, CNOT, and Bell State Vector Matrix</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="applyGate('H')">Apply Hadamard Gate (H) on Qubit 0</button>
+      <div id="quantumStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">State Vector |Ψ⟩ = 1/√2 |0⟩ + 1/√2 |1⟩ (Superposition 50% / 50%). Bloch Sphere: (X=1, Y=0, Z=0).</div>
+    </div>
+  </div>
+  <script src="quantum-simulator.js"></script>
+</body>
+</html>
