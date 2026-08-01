@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SharedArrayBuffer Lock-Free Ring Buffer Engine</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚡ SharedArrayBuffer Lock-Free Ring Buffer Stream Engine</h1>
+      <p>Lock-free Single-Producer Single-Consumer (SPSC) ring buffer using Atomics & SharedArrayBuffer</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="startStream()">Start 100,000 Ops/Sec Stream</button>
+      <div id="ringStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">Status: Idle. SharedArrayBuffer ready.</div>
+    </div>
+  </div>
+  <script src="ring-buffer-engine.js"></script>
+</body>
+</html>
