@@ -1,0 +1,14 @@
+{
+  "name": "metric-aggregator-anomaly-engine-server",
+  "version": "1.0.0",
+  "description": "Real-Time Metric Aggregator & Time-Series Anomaly Detection Engine Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}
