@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LALR(1) Parser Generator & AST Interpreter</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔤 LALR(1) Parser Generator & Syntax Tree Environment</h1>
+      <p>BNF Grammars, FIRST/FOLLOW Sets, Action/Goto Table & Shift-Reduce Debugger</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="generateLalrTable()">Compute LALR(1) Parsing Table</button>
+      <div id="lalrStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">States: 14 | Conflicts: 0 Shift-Reduce, 0 Reduce-Reduce.</div>
+    </div>
+  </div>
+  <script src="lalr-parser.js"></script>
+</body>
+</html>
