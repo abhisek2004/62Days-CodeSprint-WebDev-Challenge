@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebGPU Ray-Traced Global Illumination Lightmap Mapper</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>☀️ WebGPU Ray-Traced Global Illumination Lightmap Mapper</h1>
+      <p>WGSL Path-Tracing Shader computing indirect diffuse light bounces for 3D architectural scenes</p>
+    </header>
+
+    <div class="controls">
+      <label>Light Bounces: <input type="number" id="bounceCount" value="3" min="1" max="8"></label>
+      <label>Samples Per Pixel (SPP): <input type="number" id="sppCount" value="64" min="16" max="512"></label>
+      <button class="btn" onclick="bakeLightmap()">Bake Ray-Traced Lightmap</button>
+    </div>
+
+    <div class="canvas-box">
+      <canvas id="rayCanvas" width="600" height="350"></canvas>
+    </div>
+
+    <div id="statusBox" class="status-card">
+      Ready for WebGPU Progressive Accumulation Path-Tracing.
+    </div>
+  </div>
+
+  <script src="gi-lightmap-mapper.js"></script>
+</body>
+</html>
