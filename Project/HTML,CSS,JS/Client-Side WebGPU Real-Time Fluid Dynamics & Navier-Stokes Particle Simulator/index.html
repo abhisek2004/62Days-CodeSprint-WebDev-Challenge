@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebGPU Real-Time Fluid Dynamics & Navier-Stokes</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌊 WebGPU Real-Time Fluid Dynamics Simulator</h1>
+      <p>Navier-Stokes Eulerian Grid & 100,000 Smoothed Particle Hydrodynamics (SPH) WGSL Compute Shaders</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="startFluidSim()">Run 100,000 SPH Particle Simulation</button>
+      <div id="fluidStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">WebGPU WGSL Compute Shader Pipeline: 100,000 Particles @ 60 FPS (Viscosity: 0.02, Buoyancy: 1.0).</div>
+    </div>
+  </div>
+  <script src="fluid-simulator.js"></script>
+</body>
+</html>
