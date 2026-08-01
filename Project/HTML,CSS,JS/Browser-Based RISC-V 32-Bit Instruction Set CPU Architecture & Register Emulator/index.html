@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RISC-V RV32I 32-Bit CPU Emulator</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>💻 RISC-V RV32I 32-Bit CPU & Register Emulator</h1>
+      <p>5-stage pipeline step debugger & 32-bit registers (x0-x31, PC, ALU status)</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="stepInstruction()">Step Instruction (PC + 4)</button>
+      <div id="cpuRegisters" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">PC: 0x00000004 | x1 (ra): 0x00000010 | x2 (sp): 0x7FFFFFF0 | x10 (a0): 55</div>
+    </div>
+  </div>
+  <script src="riscv-emulator.js"></script>
+</body>
+</html>
