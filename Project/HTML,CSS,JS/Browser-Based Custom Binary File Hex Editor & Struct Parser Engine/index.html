@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browser Binary File Hex Editor & Struct Parser</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>👾 Browser Binary File Hex Editor & Struct Parser Engine</h1>
+      <p>Inspect raw hex bytes, edit binary data, and apply C-style struct schemas to parse binary headers</p>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Raw Hex Bytes Grid (Offset | Bytes | ASCII)</h3>
+        <div id="hexGrid" class="hex-grid"></div>
+      </div>
+
+      <div class="card">
+        <h3>C-Style Struct Header Inspector</h3>
+        <div id="structParsed" class="struct-parsed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="hex-editor-engine.js"></script>
+</body>
+</html>
