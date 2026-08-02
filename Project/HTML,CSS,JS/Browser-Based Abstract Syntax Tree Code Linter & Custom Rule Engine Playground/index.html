@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AST Code Linter & Custom Rule Playground</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌳 AST Code Linter & Custom Rule Engine Playground</h1>
+      <p>Inspect ESTree syntax nodes and write custom AST visitor functions</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="runAstLint()">Run AST Linting Rules</button>
+      <div id="astStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">Click to run AST visitor rules (disallow-eval, no-var, enforce-const).</div>
+    </div>
+  </div>
+  <script src="ast-linter-playground.js"></script>
+</body>
+</html>
