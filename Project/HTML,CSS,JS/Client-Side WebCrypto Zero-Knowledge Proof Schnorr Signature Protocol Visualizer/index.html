@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Zero-Knowledge Proof Schnorr Signature Protocol</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔐 WebCrypto Zero-Knowledge Proof (ZKP) Schnorr Protocol</h1>
+      <p>Fiat-Shamir Non-Interactive Zero-Knowledge Proof (NIZKP) Verification Engine</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="generateZkp()">Generate & Verify NIZKP Proof</button>
+      <div id="zkpStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">Prover secret x concealed. Schnorr Commitment R = g^r mod p.</div>
+    </div>
+  </div>
+  <script src="zkp-visualizer.js"></script>
+</body>
+</html>
