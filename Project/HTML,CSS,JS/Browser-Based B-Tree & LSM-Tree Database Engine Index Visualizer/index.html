@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>B-Tree & LSM-Tree Database Index Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌲 B-Tree & LSM-Tree Database Index Visualizer</h1>
+      <p>B+ Tree Node Splits & Log-Structured Merge (LSM) SSTable Compactions</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="insertBTreeKey(42)">Insert Key 42 (Trigger Node Split M=3)</button>
+      <div id="dbStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">MemTable flushed to Level 0 SSTable file #0001.ldb. B+ Tree Height: 3.</div>
+    </div>
+  </div>
+  <script src="db-index-visualizer.js"></script>
+</body>
+</html>
