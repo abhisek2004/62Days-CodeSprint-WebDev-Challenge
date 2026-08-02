@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Steganography Encryptor & Extractor</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🕵️ Image Steganography Encryptor & Secret Bit Extractor</h1>
+      <p>Embed AES-256 WebCrypto encrypted secret payloads into Least Significant Bits (LSB) of image pixel data</p>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h3>LSB Steganography Encoder</h3>
+        <label>Secret Text Payload</label>
+        <textarea id="secretMsg" class="input-field" style="height: 90px;">CONFIDENTIAL: Patient Medical Record #1092</textarea>
+
+        <label>Encryption Passphrase</label>
+        <input type="password" id="passphrase" class="input-field" value="super_secret_key_123">
+
+        <button class="btn" onclick="encodeSteganoPayload()">Embed Encrypted Payload into LSB</button>
+      </div>
+
+      <div class="card">
+        <h3>Carrier Canvas & Histogram</h3>
+        <div class="canvas-box">
+          <canvas id="stegoCanvas" width="300" height="180"></canvas>
+        </div>
+        <div id="stegoStatus" class="status-msg">Carrier Image Ready (Capacity: 18.4 KB).</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="steganography-studio.js"></script>
+</body>
+</html>
