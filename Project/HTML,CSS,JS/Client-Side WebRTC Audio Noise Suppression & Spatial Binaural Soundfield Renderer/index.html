@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebRTC Audio Noise Suppression & Spatial Soundfield</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎙️ WebRTC Audio Noise Suppression & Spatial Soundfield</h1>
+      <p>HRTF Binaural 3D Audio Panner & Spectral Subtraction Noise Gate</p>
+    </header>
+    <div class="card">
+      <button class="btn" onclick="toggleNoiseFilter()">Toggle Spectral Noise Suppression</button>
+      <div id="audioStatus" style="margin-top:1rem;font-family:monospace;color:#38bdf8;">Spectral Filter Active (-18dB Noise Floor Reduction).</div>
+    </div>
+  </div>
+  <script src="spatial-audio-webrtc.js"></script>
+</body>
+</html>
