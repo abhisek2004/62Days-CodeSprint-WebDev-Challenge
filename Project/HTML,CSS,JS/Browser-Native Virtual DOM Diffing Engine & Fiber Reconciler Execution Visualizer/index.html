@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual DOM Diffing Engine & Fiber Reconciler</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚡ Virtual DOM Diffing Engine & Fiber Reconciler Visualizer</h1>
+      <p>Interactive educational tool comparing Old VDOM vs New VDOM structures & Fiber reconciliation work loops</p>
+    </header>
+
+    <div class="controls">
+      <button class="btn" onclick="triggerReconciliation('updateProps')">Update Element Props</button>
+      <button class="btn" onclick="triggerReconciliation('reorderList')">Reorder Keyed Children List</button>
+      <button class="btn btn-danger" onclick="triggerReconciliation('replaceNode')">Replace Node Type</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Old Virtual DOM Tree</h3>
+        <pre id="oldVdomCode" class="vdom-code"></pre>
+      </div>
+
+      <div class="card">
+        <h3>New Virtual DOM Tree</h3>
+        <pre id="newVdomCode" class="vdom-code"></pre>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem;">
+      <h3>Fiber Reconciliation Diff Logs</h3>
+      <div id="diffLogs" class="log-box"></div>
+    </div>
+  </div>
+
+  <script src="vdom-reconciler.js"></script>
+</body>
+</html>
